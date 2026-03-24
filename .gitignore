@@ -1,0 +1,13 @@
+# large files
+data/met_eireann_dublin_hourly.csv
+
+# jupyter checkpoints
+.ipynb_checkpoints/
+
+# python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
