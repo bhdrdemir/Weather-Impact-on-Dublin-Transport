@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Impact on Dublin Transport — ETL Pipeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+        /* --- NAV --- */
+        nav { background: #1e293b; border-bottom: 1px solid #334155; padding: 0 20px; display: flex; align-items: center; height: 56px; position: sticky; top: 0; z-index: 100; }
+        .nav-brand { font-size: 16px; font-weight: 700; color: #60a5fa; margin-right: 32px; white-space: nowrap; }
+        .nav-brand span { color: #94a3b8; font-weight: 400; font-size: 13px; }
+        .nav-tabs { display: flex; gap: 4px; }
+        .nav-tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #94a3b8; transition: all .2s; border: none; background: none; }
+        .nav-tab:hover { color: #e2e8f0; background: #334155; }
+        .nav-tab.active { color: #60a5fa; background: #1e3a5f; }
+
+        /* --- LAYOUT --- */
+        .page { display: none; padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .page.active { display: block; }
+        h2 { font-size: 22px; margin-bottom: 16px; color: #f1f5f9; }
+        h3 { font-size: 17px; margin: 20px 0 10px; color: #cbd5e1; }
+
+        /* --- CARDS --- */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; }
+        .card-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .card-value { font-size: 28px; font-weight: 700; color: #f1f5f9; }
+        .card-sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+        /* --- CHARTS --- */
+        .chart-container { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .chart-wrap { position: relative; height: 320px; }
+
+        /* --- TABLE --- */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #334155; color: #cbd5e1; padding: 10px 12px; text-align: left; font-weight: 600; position: sticky; top: 0; }
+        td { padding: 8px 12px; border-bottom: 1px solid #1e293b; }
+        tr:hover td { background: #1e293b; }
+        .table-wrap { max-height: 400px; overflow-y: auto; border-radius: 8px; border: 1px solid #334155; background: #0f172a; }
+
+        /* --- PIPELINE --- */
+        .step { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+        .step-header { display: flex; align-items: center; gap: 10px; }
+        .step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .step-icon.pending { background: #334155; color: #64748b; }
+        .step-icon.running { background: #1e3a5f; color: #60a5fa; animation: pulse 1.5s infinite; }
+        .step-icon.complete { background: #14532d; color: #4ade80; }
+        .step-icon.failed { background: #450a0a; color: #f87171; }
+        .step-name { font-weight: 600; font-size: 15px; }
+        .step-details { margin-top: 10px; padding-left: 38px; font-size: 13px; color: #94a3b8; }
+        .step-detail-item { margin: 3px 0; }
+
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* --- BTN --- */
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+        /* --- SQL Editor --- */
+        .sql-editor { width: 100%; min-height: 80px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #e2e8f0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; }
+        .sql-editor:focus { outline: none; border-color: #60a5fa; }
+
+        /* --- TESTS --- */
+        .test-result { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+        .test-pass { color: #4ade80; }
+        .test-fail { color: #f87171; }
+        .test-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .test-badge.pass { background: #14532d; color: #4ade80; }
+        .test-badge.fail { background: #450a0a; color: #f87171; }
+
+        /* --- DOCS --- */
+        .doc-section { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 24px; margin-bottom: 20px; line-height: 1.7; }
+        .doc-section h3 { color: #60a5fa; margin-top: 0; }
+        .doc-section p { color: #cbd5e1; margin-bottom: 12px; font-size: 14px; }
+        .doc-section code { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #fbbf24; }
+        .doc-section pre { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; overflow-x: auto; margin: 10px 0; font-size: 13px; color: #e2e8f0; }
+        .doc-arch { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; text-align: center; }
+        .doc-arch-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px 8px; }
+        .doc-arch-box .title { font-weight: 700; color: #60a5fa; font-size: 13px; margin-bottom: 6px; }
+        .doc-arch-box .desc { font-size: 11px; color: #94a3b8; }
+        .doc-arrow { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 20px; }
+
+        /* --- STATUS --- */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-dot.green { background: #4ade80; }
+        .status-dot.yellow { background: #fbbf24; }
+        .status-dot.red { background: #f87171; }
+        .status-dot.gray { background: #64748b; }
+
+        /* --- INPUT --- */
+        input[type=text] { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #e2e8f0; font-size: 13px; }
+        input[type=text]:focus { outline: none; border-color: #60a5fa; }
+
+        /* --- FEATURE TABLE --- */
+        .feature-table { width: 100%; margin: 12px 0; }
+        .feature-table th { background: #1e3a5f; }
+        .feature-table td { font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+    <div class="nav-brand">Dublin Transport <span>| ETL Pipeline</span></div>
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+        <button class="nav-tab" onclick="showTab('pipeline')">Pipeline</button>
+        <button class="nav-tab" onclick="showTab('database')">Database</button>
+        <button class="nav-tab" onclick="showTab('tests')">Tests</button>
+        <button class="nav-tab" onclick="showTab('docs')">Documents</button>
+    </div>
+</nav>
+
+<!-- ===================== DASHBOARD TAB ===================== -->
+<div id="tab-dashboard" class="page active">
+    <h2>Weather & Transport Dashboard</h2>
+    <div id="dash-loading" style="color:#64748b; padding:40px; text-align:center;">
+        Loading dashboard data... (Run the pipeline first if no data appears)
+    </div>
+
+    <div id="dash-content" style="display:none;">
+        <div class="card-grid" id="summary-cards"></div>
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Bus & Luas Monthly Passengers</h3>
+                <div class="chart-wrap"><canvas id="chart-timeline"></canvas></div>
+            </div>
+            <div class="chart-container">
+                <h3>Seasonal Ridership Averages</h3>
+                <div class="chart-wrap"><canvas id="chart-seasonal"></canvas></div>
+            </div>
+        </div>
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Rainfall vs Bus Passengers</h3>
+                <div class="chart-wrap"><canvas id="chart-scatter-rain"></canvas></div>
+            </div>
+            <div class="chart-container">
+                <h3>Temperature vs Bus Passengers</h3>
+                <div class="chart-wrap"><canvas id="chart-scatter-temp"></canvas></div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Correlation Analysis</h3>
+            <div class="table-wrap">
+                <table id="corr-table">
+                    <thead><tr><th>Mode</th><th>Variable</th><th>Pearson r</th><th>p-value</th><th>Spearman r</th><th>p-value</th><th>Significant</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== PIPELINE TAB ===================== -->
+<div id="tab-pipeline" class="page">
+    <h2>ETL Pipeline Control</h2>
+
+    <div style="display:flex; gap:12px; align-items:center; margin-bottom:20px;">
+        <button class="btn btn-primary" id="btn-run-pipeline" onclick="runPipeline()">Run Full Pipeline</button>
+        <span id="pipeline-status-text" style="font-size:13px; color:#94a3b8;">
+            <span class="status-dot gray"></span> Idle — click to start
+        </span>
+    </div>
+
+    <div style="margin-bottom:16px;">
+        <label style="font-size:13px; color:#94a3b8;">OpenWeatherMap API Key (optional):</label><br>
+        <input type="text" id="owm-key" placeholder="Paste your free API key..." style="width:400px; margin-top:4px;">
+    </div>
+
+    <div id="pipeline-steps">
+        <div class="step" id="step-acquisition">
+            <div class="step-header">
+                <div class="step-icon pending">1</div>
+                <span class="step-name">Data Acquisition</span>
+            </div>
+            <div class="step-details">APIs (OpenWeatherMap, Open-Meteo) + CSV files (Met Eireann, CSO)</div>
+        </div>
+        <div class="step" id="step-extraction">
+            <div class="step-header">
+                <div class="step-icon pending">2</div>
+                <span class="step-name">Feature Extraction</span>
+            </div>
+            <div class="step-details">Temporal, weather, transport, and interaction features</div>
+        </div>
+        <div class="step" id="step-transform">
+            <div class="step-header">
+                <div class="step-icon pending">3</div>
+                <span class="step-name">Transformations</span>
+            </div>
+            <div class="step-details">Clean, merge weather + transport, exclude COVID years</div>
+        </div>
+        <div class="step" id="step-database">
+            <div class="step-header">
+                <div class="step-icon pending">4</div>
+                <span class="step-name">Database Loading</span>
+            </div>
+            <div class="step-details">Load into SQLite — 6 normalised tables</div>
+        </div>
+    </div>
+
+    <div id="pipeline-result" style="display:none; margin-top:20px;" class="card"></div>
+</div>
+
+<!-- ===================== DATABASE TAB ===================== -->
+<div id="tab-database" class="page">
+    <h2>Database Explorer</h2>
+
+    <div id="db-tables" class="card-grid" style="margin-bottom:20px;"></div>
+
+    <div class="card" style="margin-bottom:16px;">
+        <h3>SQL Query</h3>
+        <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM weather_transport_merged LIMIT 20">SELECT season, ROUND(AVG(bus_passengers)) as avg_bus, ROUND(AVG(luas_passengers)) as avg_luas, ROUND(AVG(rain),1) as avg_rain FROM weather_transport_merged GROUP BY season</textarea>
+        <div style="margin-top:10px;">
+            <button class="btn btn-primary btn-sm" onclick="executeQuery()">Run Query</button>
+            <span id="query-status" style="margin-left:10px; font-size:13px; color:#94a3b8;"></span>
+        </div>
+    </div>
+
+    <div class="table-wrap" id="query-result" style="display:none;">
+        <table id="result-table">
+            <thead id="result-thead"></thead>
+            <tbody id="result-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===================== TESTS TAB ===================== -->
+<div id="tab-tests" class="page">
+    <h2>Test Suite</h2>
+    <button class="btn btn-success" id="btn-run-tests" onclick="runTests()">Run All Tests</button>
+    <div id="test-summary" style="margin:16px 0;"></div>
+    <div class="card" id="test-results" style="display:none;"></div>
+</div>
+
+<!-- ===================== DOCUMENTS TAB ===================== -->
+<div id="tab-docs" class="page">
+    <h2>Project Documentation</h2>
+
+    <div class="doc-section">
+        <h3>1. Project Overview</h3>
+        <p>This project implements a <strong>Data Acquisition and Preprocessing Pipeline</strong> that investigates how weather conditions affect public transport ridership in Dublin, Ireland. The system acquires data from multiple sources (REST APIs and flat files), extracts meaningful features, applies transformations, and loads the results into a normalised SQLite database. A web-based frontend provides interactive exploration of the data.</p>
+        <p><strong>Module:</strong> B9AI001 Programming for Data Analytics | <strong>Programme:</strong> MSc Artificial Intelligence, Dublin Business School</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>2. System Architecture</h3>
+        <div class="doc-arch">
+            <div class="doc-arch-box">
+                <div class="title">Data Sources</div>
+                <div class="desc">OpenWeatherMap API<br>Open-Meteo API<br>Met Eireann CSV<br>CSO CSV</div>
+            </div>
+            <div class="doc-arch-box">
+                <div class="title">Acquisition</div>
+                <div class="desc">REST API calls<br>CSV file loading<br>Error handling<br>Rate limiting</div>
+            </div>
+            <div class="doc-arch-box">
+                <div class="title">Feature Extraction</div>
+                <div class="desc">Temporal features<br>Weather features<br>Transport features<br>Interaction features</div>
+            </div>
+            <div class="doc-arch-box">
+                <div class="title">Database</div>
+                <div class="desc">SQLite<br>6 tables<br>Indexes<br>SQL queries</div>
+            </div>
+            <div class="doc-arch-box">
+                <div class="title">Frontend</div>
+                <div class="desc">Flask + HTML/JS<br>Chart.js visuals<br>SQL explorer<br>Test runner</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <h3>3. Data Acquisition</h3>
+        <p>The pipeline acquires data from <strong>four sources</strong> using two methods:</p>
+        <p><strong>API Sources:</strong></p>
+        <p><code>fetch_openweather_current()</code> — Calls the OpenWeatherMap REST API to retrieve real-time Dublin weather (temperature, humidity, wind, rain, clouds). Uses free tier (1,000 calls/day). Returns a parsed dictionary with error handling and timeout protection.</p>
+        <p><code>fetch_open_meteo_historical()</code> — Calls the Open-Meteo archive API (no key required) to fetch hourly historical weather for Dublin (2018-2025). Implements rate limiting with <code>time.sleep()</code> between yearly chunks. Returns a DataFrame with ~60,000 hourly records.</p>
+        <p><strong>CSV Sources:</strong></p>
+        <p><code>load_met_eireann_daily()</code> — Reads Met Eireann Dublin Airport daily weather CSV. Handles 24 rows of station metadata, cleans string-to-numeric conversions. 30,000+ records from 1942-2026.</p>
+        <p><code>load_dublin_bus()</code> / <code>load_luas()</code> — Reads CSO transport statistics. Filters summary rows, combines Luas Red+Green lines into total. Monthly ridership data 2014-2024.</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>4. Feature Extraction</h3>
+        <p>Feature extraction transforms raw data into meaningful analytical variables. This is a critical step that enables correlation analysis between weather and transport patterns.</p>
+
+        <p><strong>4.1 Temporal Features</strong> — <code>extract_temporal_features()</code></p>
+        <table class="feature-table">
+            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>year, month, day</code></td><td>Integer</td><td>Date components for grouping and filtering</td></tr>
+            <tr><td><code>weekday</code></td><td>String</td><td>Day name (Monday-Sunday)</td></tr>
+            <tr><td><code>is_weekend</code></td><td>Boolean</td><td>Weekend flag — transport patterns differ on weekends</td></tr>
+            <tr><td><code>season</code></td><td>Categorical</td><td>Meteorological season (Winter/Spring/Summer/Autumn)</td></tr>
+            <tr><td><code>quarter</code></td><td>Integer</td><td>Calendar quarter (Q1-Q4)</td></tr>
+        </table>
+
+        <p><strong>4.2 Weather Features</strong> — <code>extract_weather_features()</code></p>
+        <table class="feature-table">
+            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>avg_temp</code></td><td>Float</td><td>Mean of daily max/min temperature</td></tr>
+            <tr><td><code>temp_range</code></td><td>Float</td><td>Diurnal temperature range (max - min)</td></tr>
+            <tr><td><code>rain_category</code></td><td>Categorical</td><td>Rainfall classification: dry/light/moderate/heavy/very_heavy</td></tr>
+            <tr><td><code>is_rainy</code></td><td>Boolean</td><td>Rain flag (threshold > 0.2mm per Met Eireann)</td></tr>
+            <tr><td><code>wind_chill</code></td><td>Float</td><td>Apparent temperature factoring wind speed</td></tr>
+            <tr><td><code>weather_severity</code></td><td>Float (0-10)</td><td>Composite index: cold stress (25%) + rain intensity (50%) + wind (25%)</td></tr>
+            <tr><td><code>comfort_index</code></td><td>Float (0-10)</td><td>Inverse of severity — higher = more comfortable outdoor conditions</td></tr>
+        </table>
+
+        <p><strong>4.3 Transport Features</strong> — <code>extract_transport_features()</code></p>
+        <table class="feature-table">
+            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>passengers_norm</code></td><td>Float (0-1)</td><td>Min-max normalised passenger count for cross-mode comparison</td></tr>
+            <tr><td><code>yoy_change</code></td><td>Float (%)</td><td>Year-over-year percentage change in ridership</td></tr>
+            <tr><td><code>rolling_avg_3m</code></td><td>Float</td><td>3-month rolling average to smooth seasonal noise</td></tr>
+            <tr><td><code>is_covid</code></td><td>Boolean</td><td>Flag for 2020-2021 lockdown period (excluded from correlation analysis)</td></tr>
+        </table>
+
+        <p><strong>4.4 Interaction Features</strong> — <code>extract_merged_features()</code></p>
+        <table class="feature-table">
+            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>rain_group</code></td><td>Categorical</td><td>Tercile classification: low/mid/high rainfall months</td></tr>
+            <tr><td><code>temp_group</code></td><td>Categorical</td><td>Tercile classification: cold/mild/warm months</td></tr>
+            <tr><td><code>total_passengers</code></td><td>Integer</td><td>Combined bus + luas ridership</td></tr>
+            <tr><td><code>bus_share</code></td><td>Float (0-1)</td><td>Bus proportion of total public transport</td></tr>
+            <tr><td><code>weather_impact_score</code></td><td>Float (%)</td><td>Ridership deviation from seasonal mean — measures how weather shifts demand</td></tr>
+        </table>
+    </div>
+
+    <div class="doc-section">
+        <h3>5. Transformations</h3>
+        <p>Key transformation functions, each independently testable:</p>
+        <p><code>classify_rainfall(rain_mm)</code> — Categorises daily rainfall using Met Eireann meteorological thresholds. Handles NaN and negative values as 'unknown'.</p>
+        <p><code>compute_weather_severity(temp, rain, wind)</code> — Weighted composite index combining three normalised components. Rain gets 50% weight as it most directly affects transport decisions (people choosing not to walk to stops/stations).</p>
+        <p><code>normalise_passengers(series, method)</code> — Supports min-max (0-1 scaling) and z-score (mean=0, std=1) normalisation. Handles edge cases (constant series, zero standard deviation).</p>
+        <p><strong>COVID-19 Handling:</strong> Years 2020-2021 are flagged with <code>is_covid=True</code> and excluded from all correlation analyses. Lockdown-induced ridership collapse would create spurious weather-transport correlations if included.</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>6. Database Schema</h3>
+        <p>Data is stored in a normalised SQLite database with 6 tables and indexed for query performance:</p>
+        <pre>
+weather_daily        — 30,000+ rows: daily weather + extracted features
+weather_monthly      — 1,000+ rows: monthly weather aggregates
+bus_passengers       — 130+ rows: Dublin Bus monthly ridership + features
+luas_passengers      — 80+ rows: Luas monthly ridership + features
+weather_transport_merged — 60+ rows: joined weather-transport for analysis
+api_weather_log      — API-fetched weather records</pre>
+        <p>Indexes on <code>(year, month)</code> and <code>season</code> columns enable fast filtering in dashboard queries.</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>7. Testing Strategy</h3>
+        <p>The test suite includes <strong>unit tests</strong> for each transformation function and an <strong>integration test</strong> that verifies the full pipeline round-trip:</p>
+        <p><strong>Unit Tests:</strong> classify_rainfall (7 tests), map_season (5 tests), compute_weather_severity (5 tests), normalise_passengers (6 tests), validate_dataframe (4 tests), extract_temporal_features (3 tests), extract_weather_features (3 tests).</p>
+        <p><strong>Integration Test:</strong> Simulates the full pipeline — creates sample data, applies feature extraction and transformations, stores in a test database, queries back using SQL (simulating a frontend request), and validates data integrity across the round-trip. This tests the interaction between frontend (data retrieval) and backend (storage).</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>8. Ethical Considerations</h3>
+        <p><strong>Data Privacy:</strong> All datasets contain aggregated statistics only. No personally identifiable information (PII) is collected or processed.</p>
+        <p><strong>API Compliance:</strong> Both APIs are used within their free-tier limits. Rate limiting (<code>time.sleep()</code>) prevents excessive load on external servers. API keys are stored as configuration variables, not hardcoded.</p>
+        <p><strong>Data Licensing:</strong> All data sources use Creative Commons Attribution 4.0 licences. Full attribution is provided in Section 9.</p>
+        <p><strong>Bias Awareness:</strong> COVID-19 lockdowns created anomalous transport patterns. Excluding 2020-2021 from analysis prevents misleading conclusions while preserving the data for context.</p>
+    </div>
+
+    <div class="doc-section">
+        <h3>9. Attributions & Licences</h3>
+        <table class="feature-table">
+            <tr><th>Source</th><th>Data</th><th>Licence</th></tr>
+            <tr><td>Met Eireann</td><td>Daily & monthly weather (Dublin Airport)</td><td>CC BY 4.0</td></tr>
+            <tr><td>CSO Ireland</td><td>Dublin Bus (TOA14), Luas (TOA11), Weekly journeys (THA25)</td><td>CC BY 4.0</td></tr>
+            <tr><td>OpenWeatherMap</td><td>Current weather API</td><td>CC BY-SA 4.0</td></tr>
+            <tr><td>Open-Meteo</td><td>Historical hourly weather</td><td>CC BY 4.0</td></tr>
+        </table>
+        <br>
+        <table class="feature-table">
+            <tr><th>Library</th><th>Purpose</th><th>Licence</th></tr>
+            <tr><td>Flask</td><td>Web framework / API server</td><td>BSD 3-Clause</td></tr>
+            <tr><td>pandas / numpy</td><td>Data manipulation</td><td>BSD 3-Clause</td></tr>
+            <tr><td>scipy</td><td>Statistical testing</td><td>BSD 3-Clause</td></tr>
+            <tr><td>Chart.js</td><td>Frontend visualisation</td><td>MIT</td></tr>
+            <tr><td>requests</td><td>HTTP API calls</td><td>Apache 2.0</td></tr>
+        </table>
+        <br>
+        <p><strong>AI Usage Disclosure (Level 4):</strong> AI tools (Claude, Anthropic) were used to assist with code structure, documentation, and debugging. All AI-generated content has been reviewed, modified, and validated. Pipeline logic, statistical analysis, and findings are original student work. Prompt-response histories available upon request.</p>
+    </div>
+</div>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+// --- TAB NAVIGATION ---
+function showTab(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'database') loadTables();
+}
+
+// --- DASHBOARD ---
+let dashLoaded = false;
+let chartInstances = {};
+
+function destroyChart(id) {
+    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+async function loadDashboard() {
+    if (dashLoaded) return;
+    try {
+        const [dashRes, statsRes] = await Promise.all([
+            fetch('/api/dashboard/data'), fetch('/api/stats')
+        ]);
+        if (!dashRes.ok) throw new Error('No data');
+        const dash = await dashRes.json();
+        const stats = statsRes.ok ? await statsRes.json() : null;
+
+        document.getElementById('dash-loading').style.display = 'none';
+        document.getElementById('dash-content').style.display = 'block';
+
+        // Summary cards
+        if (stats && stats.summary) {
+            const s = stats.summary;
+            document.getElementById('summary-cards').innerHTML = `
+                <div class="card"><div class="card-label">Records</div><div class="card-value">${s.total_records}</div><div class="card-sub">Monthly observations (ex-COVID)</div></div>
+                <div class="card"><div class="card-label">Avg Bus Passengers</div><div class="card-value">${(s.avg_bus/1e6).toFixed(1)}M</div><div class="card-sub">per month</div></div>
+                <div class="card"><div class="card-label">Avg Luas Passengers</div><div class="card-value">${(s.avg_luas/1e6).toFixed(1)}M</div><div class="card-sub">per month</div></div>
+                <div class="card"><div class="card-label">Period</div><div class="card-value">${s.year_range}</div><div class="card-sub">Avg rain ${s.avg_rain}mm, temp ${s.avg_temp}°C</div></div>
+            `;
+        }
+
+        // Timeline chart
+        if (dash.bus_timeline && dash.luas_timeline) {
+            const busData = dash.bus_timeline;
+            const luasData = dash.luas_timeline;
+            destroyChart('chart-timeline');
+            chartInstances['chart-timeline'] = new Chart(document.getElementById('chart-timeline'), {
+                type: 'line',
+                data: {
+                    labels: busData.map(d => `${d.year}-${String(d.month).padStart(2,'0')}`),
+                    datasets: [
+                        { label: 'Dublin Bus', data: busData.map(d => d.passengers), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 0 },
+                        { label: 'Luas', data: luasData.map(d => d.passengers), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3, pointRadius: 0 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { ticks: { maxTicksLimit: 12, color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+            });
+        }
+
+        // Seasonal chart
+        if (dash.seasonal) {
+            const order = ['Winter', 'Spring', 'Summer', 'Autumn'];
+            const sorted = order.map(s => dash.seasonal.find(d => d.season === s)).filter(Boolean);
+            destroyChart('chart-seasonal');
+            chartInstances['chart-seasonal'] = new Chart(document.getElementById('chart-seasonal'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(d => d.season),
+                    datasets: [
+                        { label: 'Bus', data: sorted.map(d => d.avg_bus), backgroundColor: '#3b82f6' },
+                        { label: 'Luas', data: sorted.map(d => d.avg_luas), backgroundColor: '#22c55e' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+            });
+        }
+
+        // Scatter plots
+        if (dash.merged) {
+            const m = dash.merged;
+            const colors = { Winter: '#3b82f6', Spring: '#22c55e', Summer: '#eab308', Autumn: '#f97316' };
+
+            // Rain scatter
+            destroyChart('chart-scatter-rain');
+            chartInstances['chart-scatter-rain'] = new Chart(document.getElementById('chart-scatter-rain'), {
+                type: 'scatter',
+                data: { datasets: Object.keys(colors).map(s => ({ label: s, data: m.filter(d => d.season===s).map(d => ({x: d.rain, y: d.bus_passengers})), backgroundColor: colors[s], pointRadius: 5 })) },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Passengers', color: '#94a3b8' }, ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { title: { display: true, text: 'Rainfall (mm)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+            });
+
+            // Temp scatter
+            destroyChart('chart-scatter-temp');
+            chartInstances['chart-scatter-temp'] = new Chart(document.getElementById('chart-scatter-temp'), {
+                type: 'scatter',
+                data: { datasets: Object.keys(colors).map(s => ({ label: s, data: m.filter(d => d.season===s).map(d => ({x: d.meant, y: d.bus_passengers})), backgroundColor: colors[s], pointRadius: 5 })) },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Passengers', color: '#94a3b8' }, ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+            });
+        }
+
+        // Correlation table
+        if (stats && stats.bus) {
+            const tbody = document.querySelector('#corr-table tbody');
+            tbody.innerHTML = '';
+            [['Dublin Bus', stats.bus], ['Luas', stats.luas]].forEach(([mode, corrs]) => {
+                (corrs||[]).forEach(c => {
+                    tbody.innerHTML += `<tr>
+                        <td>${mode}</td><td>${c.variable}</td>
+                        <td>${c.pearson_r.toFixed(3)}</td><td>${c.pearson_p.toFixed(4)}</td>
+                        <td>${c.spearman_r.toFixed(3)}</td><td>${c.spearman_p.toFixed(4)}</td>
+                        <td>${c.significant ? '<span style="color:#4ade80">Yes</span>' : '<span style="color:#64748b">No</span>'}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        dashLoaded = true;
+    } catch(e) {
+        document.getElementById('dash-loading').textContent = 'No data available. Go to the Pipeline tab and run the pipeline first.';
+    }
+}
+
+// --- PIPELINE ---
+async function runPipeline() {
+    const btn = document.getElementById('btn-run-pipeline');
+    btn.disabled = true;
+
+    const apiKey = document.getElementById('owm-key').value;
+    const stepIds = ['acquisition', 'extraction', 'transform', 'database'];
+    stepIds.forEach(s => {
+        document.querySelector(`#step-${s} .step-icon`).className = 'step-icon pending';
+    });
+
+    document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot yellow"></span> Running...';
+
+    await fetch('/api/pipeline/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({api_key: apiKey})
+    });
+
+    // Animate steps
+    for (let i = 0; i < stepIds.length; i++) {
+        document.querySelector(`#step-${stepIds[i]} .step-icon`).className = 'step-icon running';
+        await new Promise(r => setTimeout(r, 1500));
+
+        // Poll status
+        const res = await fetch('/api/pipeline/status');
+        const state = await res.json();
+
+        if (state.result && state.result.steps) {
+            for (let j = 0; j <= i; j++) {
+                if (state.result.steps[j]) {
+                    const icon = document.querySelector(`#step-${stepIds[j]} .step-icon`);
+                    icon.className = `step-icon ${state.result.steps[j].status}`;
+                    icon.textContent = state.result.steps[j].status === 'complete' ? '✓' : j+1;
+
+                    // Show details
+                    const details = state.result.steps[j].details;
+                    if (details) {
+                        const detailEl = document.querySelector(`#step-${stepIds[j]} .step-details`);
+                        detailEl.innerHTML = Object.entries(details).map(([k,v]) =>
+                            `<div class="step-detail-item"><strong>${k}:</strong> ${Array.isArray(v) ? v.join(', ') : v}</div>`
+                        ).join('');
+                    }
+                }
+            }
+        }
+    }
+
+    // Final poll
+    await new Promise(r => setTimeout(r, 2000));
+    const finalRes = await fetch('/api/pipeline/status');
+    const finalState = await finalRes.json();
+
+    if (finalState.status === 'complete') {
+        document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot green"></span> Complete';
+        stepIds.forEach(s => {
+            const icon = document.querySelector(`#step-${s} .step-icon`);
+            icon.className = 'step-icon complete';
+            icon.textContent = '✓';
+        });
+    } else if (finalState.status === 'running') {
+        // Still running, keep polling
+        setTimeout(async () => {
+            const r = await fetch('/api/pipeline/status');
+            const s = await r.json();
+            if (s.status === 'complete') {
+                document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot green"></span> Complete';
+            }
+        }, 5000);
+    } else {
+        document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot red"></span> Failed';
+    }
+
+    dashLoaded = false;
+    btn.disabled = false;
+}
+
+// --- DATABASE ---
+async function loadTables() {
+    try {
+        const res = await fetch('/api/tables');
+        if (!res.ok) return;
+        const tables = await res.json();
+        document.getElementById('db-tables').innerHTML = tables.map(t =>
+            `<div class="card" style="cursor:pointer" onclick="queryTable('${t.name}')">
+                <div class="card-label">${t.name}</div>
+                <div class="card-value">${t.rows.toLocaleString()}</div>
+                <div class="card-sub">${t.columns.length} columns</div>
+            </div>`
+        ).join('');
+    } catch(e) {}
+}
+
+function queryTable(name) {
+    document.getElementById('sql-input').value = `SELECT * FROM ${name} LIMIT 50`;
+    executeQuery();
+}
+
+async function executeQuery() {
+    const sql = document.getElementById('sql-input').value.trim();
+    if (!sql) return;
+
+    document.getElementById('query-status').textContent = 'Running...';
+    try {
+        const res = await fetch(`/api/query?sql=${encodeURIComponent(sql)}`);
+        const data = await res.json();
+
+        if (data.error) {
+            document.getElementById('query-status').textContent = `Error: ${data.error}`;
+            return;
+        }
+
+        document.getElementById('query-status').textContent = `${data.total_rows} rows returned`;
+        document.getElementById('query-result').style.display = 'block';
+
+        document.getElementById('result-thead').innerHTML =
+            '<tr>' + data.columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+        document.getElementById('result-tbody').innerHTML =
+            data.data.map(row =>
+                '<tr>' + data.columns.map(c => `<td>${row[c] !== null ? row[c] : '<span style="color:#64748b">NULL</span>'}</td>`).join('') + '</tr>'
+            ).join('');
+    } catch(e) {
+        document.getElementById('query-status').textContent = 'Error: ' + e.message;
+    }
+}
+
+// --- TESTS ---
+async function runTests() {
+    const btn = document.getElementById('btn-run-tests');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    document.getElementById('test-summary').innerHTML = '';
+
+    try {
+        const res = await fetch('/api/tests/run');
+        const data = await res.json();
+
+        const badge = data.success ? 'pass' : 'fail';
+        document.getElementById('test-summary').innerHTML = `
+            <span class="test-badge ${badge}">${data.passed}/${data.total} PASSED</span>
+            ${data.failed > 0 ? `<span class="test-badge fail">${data.failed} FAILED</span>` : ''}
+            ${data.errors > 0 ? `<span class="test-badge fail">${data.errors} ERRORS</span>` : ''}
+        `;
+
+        let html = '';
+        // Show failures
+        if (data.failures && data.failures.length > 0) {
+            html += '<h3 style="color:#f87171; margin:12px 0 8px;">Failed Tests</h3>';
+            data.failures.forEach(f => {
+                html += `<div class="test-result test-fail">✗ ${f.test}<br><small style="color:#94a3b8">${f.message}</small></div>`;
+            });
+        }
+        if (data.error_list && data.error_list.length > 0) {
+            html += '<h3 style="color:#f87171; margin:12px 0 8px;">Errors</h3>';
+            data.error_list.forEach(e => {
+                html += `<div class="test-result test-fail">✗ ${e.test}<br><small style="color:#94a3b8">${e.message}</small></div>`;
+            });
+        }
+
+        // All passed message
+        if (data.success) {
+            html += `<div style="padding:16px; color:#4ade80; font-size:14px;">All ${data.total} tests passed successfully (${data.total - 1} unit tests + 1 integration test)</div>`;
+        }
+
+        document.getElementById('test-results').innerHTML = html;
+        document.getElementById('test-results').style.display = 'block';
+
+    } catch(e) {
+        document.getElementById('test-summary').innerHTML = `<span class="test-badge fail">Error: ${e.message}</span>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Run All Tests';
+}
+
+// --- INIT ---
+loadDashboard();
+</script>
+</body>
+</html>
