@@ -3,701 +3,1909 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Impact on Dublin Transport — ETL Pipeline</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <title>Weather Impact on Dublin Public Transport</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* --- NAV --- */
-        nav { background: #1e293b; border-bottom: 1px solid #334155; padding: 0 20px; display: flex; align-items: center; height: 56px; position: sticky; top: 0; z-index: 100; }
-        .nav-brand { font-size: 16px; font-weight: 700; color: #60a5fa; margin-right: 32px; white-space: nowrap; }
-        .nav-brand span { color: #94a3b8; font-weight: 400; font-size: 13px; }
-        .nav-tabs { display: flex; gap: 4px; }
-        .nav-tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #94a3b8; transition: all .2s; border: none; background: none; }
-        .nav-tab:hover { color: #e2e8f0; background: #334155; }
-        .nav-tab.active { color: #60a5fa; background: #1e3a5f; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
 
-        /* --- LAYOUT --- */
-        .page { display: none; padding: 24px; max-width: 1400px; margin: 0 auto; }
-        .page.active { display: block; }
-        h2 { font-size: 22px; margin-bottom: 16px; color: #f1f5f9; }
-        h3 { font-size: 17px; margin: 20px 0 10px; color: #cbd5e1; }
+        .header {
+            background-color: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* --- CARDS --- */
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; }
-        .card-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-        .card-value { font-size: 28px; font-weight: 700; color: #f1f5f9; }
-        .card-sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+        .header-left {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
 
-        /* --- CHARTS --- */
-        .chart-container { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-        .chart-wrap { position: relative; height: 320px; }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
 
-        /* --- TABLE --- */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #334155; color: #cbd5e1; padding: 10px 12px; text-align: left; font-weight: 600; position: sticky; top: 0; }
-        td { padding: 8px 12px; border-bottom: 1px solid #1e293b; }
-        tr:hover td { background: #1e293b; }
-        .table-wrap { max-height: 400px; overflow-y: auto; border-radius: 8px; border: 1px solid #334155; background: #0f172a; }
+        .last-updated {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
 
-        /* --- PIPELINE --- */
-        .step { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
-        .step-header { display: flex; align-items: center; gap: 10px; }
-        .step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .step-icon.pending { background: #334155; color: #64748b; }
-        .step-icon.running { background: #1e3a5f; color: #60a5fa; animation: pulse 1.5s infinite; }
-        .step-icon.complete { background: #14532d; color: #4ade80; }
-        .step-icon.failed { background: #450a0a; color: #f87171; }
-        .step-name { font-weight: 600; font-size: 15px; }
-        .step-details { margin-top: 10px; padding-left: 38px; font-size: 13px; color: #94a3b8; }
-        .step-detail-item { margin: 3px 0; }
+        .refresh-button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+        .refresh-button:hover {
+            background-color: #2563eb;
+        }
 
-        /* --- BTN --- */
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
-        .btn-primary { background: #2563eb; color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-        .btn-success { background: #16a34a; color: white; }
-        .btn-sm { padding: 6px 14px; font-size: 12px; }
+        .refresh-button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
 
-        /* --- SQL Editor --- */
-        .sql-editor { width: 100%; min-height: 80px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #e2e8f0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; }
-        .sql-editor:focus { outline: none; border-color: #60a5fa; }
+        .spinner {
+            display: inline-block;
+            width: 0.8rem;
+            height: 0.8rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
 
-        /* --- TESTS --- */
-        .test-result { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
-        .test-pass { color: #4ade80; }
-        .test-fail { color: #f87171; }
-        .test-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .test-badge.pass { background: #14532d; color: #4ade80; }
-        .test-badge.fail { background: #450a0a; color: #f87171; }
+        .spinner.hidden {
+            display: none;
+        }
 
-        /* --- DOCS --- */
-        .doc-section { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 24px; margin-bottom: 20px; line-height: 1.7; }
-        .doc-section h3 { color: #60a5fa; margin-top: 0; }
-        .doc-section p { color: #cbd5e1; margin-bottom: 12px; font-size: 14px; }
-        .doc-section code { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #fbbf24; }
-        .doc-section pre { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; overflow-x: auto; margin: 10px 0; font-size: 13px; color: #e2e8f0; }
-        .doc-arch { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; text-align: center; }
-        .doc-arch-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px 8px; }
-        .doc-arch-box .title { font-weight: 700; color: #60a5fa; font-size: 13px; margin-bottom: 6px; }
-        .doc-arch-box .desc { font-size: 11px; color: #94a3b8; }
-        .doc-arrow { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 20px; }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-        /* --- STATUS --- */
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-dot.green { background: #4ade80; }
-        .status-dot.yellow { background: #fbbf24; }
-        .status-dot.red { background: #f87171; }
-        .status-dot.gray { background: #64748b; }
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #334155;
+            background-color: #1e293b;
+        }
 
-        /* --- INPUT --- */
-        input[type=text] { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #e2e8f0; font-size: 13px; }
-        input[type=text]:focus { outline: none; border-color: #60a5fa; }
+        .tab-button {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
 
-        /* --- FEATURE TABLE --- */
-        .feature-table { width: 100%; margin: 12px 0; }
-        .feature-table th { background: #1e3a5f; }
-        .feature-table td { font-size: 13px; }
+        .tab-button:hover {
+            color: #e2e8f0;
+        }
+
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        .weather-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-desc {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .weather-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .weather-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        .weather-data {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .severity-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #334155;
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .severity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+            transition: width 0.5s ease;
+        }
+
+        .transport-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .transport-item {
+            background-color: #0f172a;
+            border-left: 3px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+
+        .transport-stop {
+            font-weight: 600;
+            color: #3b82f6;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .transport-detail {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        .transport-due {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .simulator-section {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .slider-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .slider-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+
+        .simulator-button {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .simulator-button:hover {
+            background-color: #059669;
+        }
+
+        .simulator-button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-box {
+            background-color: #0f172a;
+            border-left: 3px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background-color: #0f172a;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        tr:hover {
+            background-color: #0f172a;
+        }
+
+        .stats-table {
+            font-size: 0.9rem;
+        }
+
+        .stats-table td {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .significant {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .not-significant {
+            color: #f87171;
+        }
+
+        .pipeline-step {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            background-color: #0f172a;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border-left: 3px solid #334155;
+        }
+
+        .pipeline-step.pending {
+            border-left-color: #94a3b8;
+        }
+
+        .pipeline-step.running {
+            border-left-color: #f59e0b;
+        }
+
+        .pipeline-step.completed {
+            border-left-color: #10b981;
+        }
+
+        .pipeline-step.failed {
+            border-left-color: #ef4444;
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .step-detail {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .log-panel {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #10b981;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .log-line {
+            margin: 0.25rem 0;
+        }
+
+        .sql-input {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            color: #e2e8f0;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .sql-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #1e293b;
+        }
+
+        .table-browser {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .table-card {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .table-card:hover {
+            border-color: #3b82f6;
+            background-color: #1e293b;
+        }
+
+        .table-name {
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .table-info {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin: 0.25rem 0;
+        }
+
+        .test-result {
+            background-color: #0f172a;
+            border-left: 3px solid #334155;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-result.passed {
+            border-left-color: #10b981;
+        }
+
+        .test-result.failed {
+            border-left-color: #ef4444;
+        }
+
+        .test-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .test-message {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .summary-badge {
+            display: inline-block;
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-badge.failed {
+            background-color: #ef4444;
+        }
+
+        .api-key-input {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .input-group button {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .run-button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .run-button:hover {
+            background-color: #2563eb;
+        }
+
+        .run-button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+
+        /* Documentation Styles */
+        .doc-section {
+            margin-bottom: 2rem;
+        }
+
+        .doc-section h2 {
+            color: #3b82f6;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+
+        .doc-section h3 {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .doc-section p {
+            color: #cbd5e1;
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+
+        .doc-section ul, .doc-section ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .doc-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #10b981;
+            margin: 1rem 0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .code-block.python {
+            color: #60a5fa;
+        }
+
+        .loading {
+            text-align: center;
+            color: #94a3b8;
+            padding: 2rem;
+        }
+
+        .error {
+            background-color: #7f1d1d;
+            border: 1px solid #ef4444;
+            color: #fecaca;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background-color: #064e3b;
+            border: 1px solid #10b981;
+            color: #86efac;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .refresh-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab-button {
+                padding: 1rem;
+                white-space: nowrap;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .weather-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-
-<!-- NAVIGATION -->
-<nav>
-    <div class="nav-brand">Dublin Transport <span>| ETL Pipeline</span></div>
-    <div class="nav-tabs">
-        <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
-        <button class="nav-tab" onclick="showTab('pipeline')">Pipeline</button>
-        <button class="nav-tab" onclick="showTab('database')">Database</button>
-        <button class="nav-tab" onclick="showTab('tests')">Tests</button>
-        <button class="nav-tab" onclick="showTab('docs')">Documents</button>
-    </div>
-</nav>
-
-<!-- ===================== DASHBOARD TAB ===================== -->
-<div id="tab-dashboard" class="page active">
-    <h2>Weather & Transport Dashboard</h2>
-    <div id="dash-loading" style="color:#64748b; padding:40px; text-align:center;">
-        Loading dashboard data... (Run the pipeline first if no data appears)
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">Weather Impact on Dublin Public Transport</div>
+            <div class="last-updated">Last updated: <span id="lastUpdated">--:--:--</span></div>
+        </div>
+        <button class="refresh-button" onclick="refreshDashboard()">
+            <span class="spinner hidden" id="refreshSpinner"></span>
+            <span>Refresh Now</span>
+        </button>
     </div>
 
-    <div id="dash-content" style="display:none;">
-        <div class="card-grid" id="summary-cards"></div>
-        <div class="chart-row">
-            <div class="chart-container">
-                <h3>Bus & Luas Monthly Passengers</h3>
-                <div class="chart-wrap"><canvas id="chart-timeline"></canvas></div>
-            </div>
-            <div class="chart-container">
-                <h3>Seasonal Ridership Averages</h3>
-                <div class="chart-wrap"><canvas id="chart-seasonal"></canvas></div>
-            </div>
-        </div>
-        <div class="chart-row">
-            <div class="chart-container">
-                <h3>Rainfall vs Bus Passengers</h3>
-                <div class="chart-wrap"><canvas id="chart-scatter-rain"></canvas></div>
-            </div>
-            <div class="chart-container">
-                <h3>Temperature vs Bus Passengers</h3>
-                <div class="chart-wrap"><canvas id="chart-scatter-temp"></canvas></div>
-            </div>
-        </div>
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab(event, 'dashboard')">Dashboard</button>
+        <button class="tab-button" onclick="switchTab(event, 'pipeline')">Pipeline</button>
+        <button class="tab-button" onclick="switchTab(event, 'database')">Database</button>
+        <button class="tab-button" onclick="switchTab(event, 'tests')">Tests</button>
+        <button class="tab-button" onclick="switchTab(event, 'documents')">Documents</button>
+    </div>
 
-        <div class="chart-container">
-            <h3>Correlation Analysis</h3>
-            <div class="table-wrap">
-                <table id="corr-table">
-                    <thead><tr><th>Mode</th><th>Variable</th><th>Pearson r</th><th>p-value</th><th>Spearman r</th><th>p-value</th><th>Significant</th></tr></thead>
-                    <tbody></tbody>
+    <!-- DASHBOARD TAB -->
+    <div id="dashboard" class="tab-content active">
+        <div class="container">
+            <!-- Live Weather Card -->
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Live Weather</div>
+                    <div class="weather-value" id="tempValue">--</div>
+                    <div class="weather-desc" id="weatherDesc">Loading...</div>
+                    <div class="weather-grid">
+                        <div class="weather-item">
+                            <div class="weather-label">Humidity</div>
+                            <div class="weather-data" id="humidityValue">--%</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Wind Speed</div>
+                            <div class="weather-data" id="windValue">-- km/h</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Rain</div>
+                            <div class="weather-data" id="rainValue">-- mm</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Pressure</div>
+                            <div class="weather-data" id="pressureValue">-- hPa</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">Weather Severity (0-10)</div>
+                        <div class="severity-bar">
+                            <div class="severity-fill" id="severityFill" style="width: 0%"></div>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 0.5rem; color: #94a3b8;">
+                            <span id="severityValue">0</span>/10
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Transport Section -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-title">Live Transport</div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">Luas Trams (<span id="luasCount">0</span>)</h3>
+                    <div class="transport-grid" id="luasContainer">
+                        <div class="empty-state">Loading Luas data...</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">Irish Rail Trains</h3>
+                    <div class="transport-grid" id="railContainer">
+                        <div class="empty-state">Loading Rail data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Data Analysis -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-title">Historical Analysis</div>
+
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">Transport Timeline</h3>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">Seasonal Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="seasonalChart"></canvas>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">Weather vs Passengers</h3>
+                    <div class="chart-container">
+                        <canvas id="weatherCorrelationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather Impact Simulator -->
+            <div class="simulator-section">
+                <div class="card-title">Weather Impact Simulator</div>
+                <p style="color: #94a3b8; margin-bottom: 1.5rem;">Adjust weather conditions to predict transport impact</p>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Temperature: <span id="tempLabel">15</span>°C</span>
+                        <span style="color: #94a3b8;">-5 to 30°C</span>
+                    </div>
+                    <input type="range" id="tempSlider" min="-5" max="30" value="15" step="1" oninput="updateSliderLabel('tempSlider', 'tempLabel', '°C')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Rain: <span id="rainLabel">0</span> mm</span>
+                        <span style="color: #94a3b8;">0 to 200 mm</span>
+                    </div>
+                    <input type="range" id="rainSlider" min="0" max="200" value="0" step="1" oninput="updateSliderLabel('rainSlider', 'rainLabel', ' mm')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Wind Speed: <span id="windLabel">0</span> km/h</span>
+                        <span style="color: #94a3b8;">0 to 60 km/h</span>
+                    </div>
+                    <input type="range" id="windSlider" min="0" max="60" value="0" step="1" oninput="updateSliderLabel('windSlider', 'windLabel', ' km/h')">
+                </div>
+
+                <button class="simulator-button" onclick="simulateWeatherImpact()">Simulate Impact</button>
+
+                <div id="simulatorResults"></div>
+            </div>
+
+            <!-- Statistical Tables -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-title">Correlation Analysis</div>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Pearson & Spearman Correlations with Transport Volume</p>
+
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: #3b82f6; margin-bottom: 1rem;">Bus Passengers</h4>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Pearson r</th>
+                                <th>p-value</th>
+                                <th>Spearman ρ</th>
+                                <th>Significant</th>
+                            </tr>
+                        </thead>
+                        <tbody id="busCorrelations"></tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <h4 style="color: #3b82f6; margin-bottom: 1rem;">Luas Passengers</h4>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Pearson r</th>
+                                <th>p-value</th>
+                                <th>Spearman ρ</th>
+                                <th>Significant</th>
+                            </tr>
+                        </thead>
+                        <tbody id="luasCorrelations"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kruskal-Wallis Test Results -->
+            <div class="card">
+                <div class="card-title">Kruskal-Wallis H-Test</div>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Testing if transport volume differs by categorical groups</p>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>H-Statistic</th>
+                            <th>p-value</th>
+                            <th>Significant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kruskalResults"></tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ===================== PIPELINE TAB ===================== -->
-<div id="tab-pipeline" class="page">
-    <h2>ETL Pipeline Control</h2>
+    <!-- PIPELINE TAB -->
+    <div id="pipeline" class="tab-content">
+        <div class="container">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-title">Data Pipeline</div>
 
-    <div style="display:flex; gap:12px; align-items:center; margin-bottom:20px;">
-        <button class="btn btn-primary" id="btn-run-pipeline" onclick="runPipeline()">Run Full Pipeline</button>
-        <span id="pipeline-status-text" style="font-size:13px; color:#94a3b8;">
-            <span class="status-dot gray"></span> Idle — click to start
-        </span>
-    </div>
+                <div class="input-group">
+                    <input type="text" class="api-key-input" id="apiKeyInput" placeholder="(Optional) OpenWeatherMap API Key">
+                    <button class="run-button" onclick="runPipeline()" id="runPipelineBtn">Run Pipeline</button>
+                </div>
 
-    <div style="margin-bottom:16px;">
-        <label style="font-size:13px; color:#94a3b8;">OpenWeatherMap API Key (optional):</label><br>
-        <input type="text" id="owm-key" placeholder="Paste your free API key..." style="width:400px; margin-top:4px;">
-    </div>
+                <div id="pipelineSteps">
+                    <div class="pipeline-step pending">
+                        <div class="step-icon">⏳</div>
+                        <div class="step-content">
+                            <h4>Data Acquisition</h4>
+                            <div class="step-detail">Fetching weather and transport data...</div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-icon">⏳</div>
+                        <div class="step-content">
+                            <h4>Feature Extraction</h4>
+                            <div class="step-detail">Waiting to start</div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-icon">⏳</div>
+                        <div class="step-content">
+                            <h4>Transformations</h4>
+                            <div class="step-detail">Waiting to start</div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-icon">⏳</div>
+                        <div class="step-content">
+                            <h4>Database Loading</h4>
+                            <div class="step-detail">Waiting to start</div>
+                        </div>
+                    </div>
+                </div>
 
-    <div id="pipeline-steps">
-        <div class="step" id="step-acquisition">
-            <div class="step-header">
-                <div class="step-icon pending">1</div>
-                <span class="step-name">Data Acquisition</span>
-            </div>
-            <div class="step-details">APIs (OpenWeatherMap, Open-Meteo) + CSV files (Met Eireann, CSO)</div>
-        </div>
-        <div class="step" id="step-extraction">
-            <div class="step-header">
-                <div class="step-icon pending">2</div>
-                <span class="step-name">Feature Extraction</span>
-            </div>
-            <div class="step-details">Temporal, weather, transport, and interaction features</div>
-        </div>
-        <div class="step" id="step-transform">
-            <div class="step-header">
-                <div class="step-icon pending">3</div>
-                <span class="step-name">Transformations</span>
-            </div>
-            <div class="step-details">Clean, merge weather + transport, exclude COVID years</div>
-        </div>
-        <div class="step" id="step-database">
-            <div class="step-header">
-                <div class="step-icon pending">4</div>
-                <span class="step-name">Database Loading</span>
-            </div>
-            <div class="step-details">Load into SQLite — 6 normalised tables</div>
-        </div>
-    </div>
-
-    <div id="pipeline-result" style="display:none; margin-top:20px;" class="card"></div>
-</div>
-
-<!-- ===================== DATABASE TAB ===================== -->
-<div id="tab-database" class="page">
-    <h2>Database Explorer</h2>
-
-    <div id="db-tables" class="card-grid" style="margin-bottom:20px;"></div>
-
-    <div class="card" style="margin-bottom:16px;">
-        <h3>SQL Query</h3>
-        <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM weather_transport_merged LIMIT 20">SELECT season, ROUND(AVG(bus_passengers)) as avg_bus, ROUND(AVG(luas_passengers)) as avg_luas, ROUND(AVG(rain),1) as avg_rain FROM weather_transport_merged GROUP BY season</textarea>
-        <div style="margin-top:10px;">
-            <button class="btn btn-primary btn-sm" onclick="executeQuery()">Run Query</button>
-            <span id="query-status" style="margin-left:10px; font-size:13px; color:#94a3b8;"></span>
-        </div>
-    </div>
-
-    <div class="table-wrap" id="query-result" style="display:none;">
-        <table id="result-table">
-            <thead id="result-thead"></thead>
-            <tbody id="result-tbody"></tbody>
-        </table>
-    </div>
-</div>
-
-<!-- ===================== TESTS TAB ===================== -->
-<div id="tab-tests" class="page">
-    <h2>Test Suite</h2>
-    <button class="btn btn-success" id="btn-run-tests" onclick="runTests()">Run All Tests</button>
-    <div id="test-summary" style="margin:16px 0;"></div>
-    <div class="card" id="test-results" style="display:none;"></div>
-</div>
-
-<!-- ===================== DOCUMENTS TAB ===================== -->
-<div id="tab-docs" class="page">
-    <h2>Project Documentation</h2>
-
-    <div class="doc-section">
-        <h3>1. Project Overview</h3>
-        <p>This project implements a <strong>Data Acquisition and Preprocessing Pipeline</strong> that investigates how weather conditions affect public transport ridership in Dublin, Ireland. The system acquires data from multiple sources (REST APIs and flat files), extracts meaningful features, applies transformations, and loads the results into a normalised SQLite database. A web-based frontend provides interactive exploration of the data.</p>
-        <p><strong>Module:</strong> B9AI001 Programming for Data Analytics | <strong>Programme:</strong> MSc Artificial Intelligence, Dublin Business School</p>
-    </div>
-
-    <div class="doc-section">
-        <h3>2. System Architecture</h3>
-        <div class="doc-arch">
-            <div class="doc-arch-box">
-                <div class="title">Data Sources</div>
-                <div class="desc">OpenWeatherMap API<br>Open-Meteo API<br>Met Eireann CSV<br>CSO CSV</div>
-            </div>
-            <div class="doc-arch-box">
-                <div class="title">Acquisition</div>
-                <div class="desc">REST API calls<br>CSV file loading<br>Error handling<br>Rate limiting</div>
-            </div>
-            <div class="doc-arch-box">
-                <div class="title">Feature Extraction</div>
-                <div class="desc">Temporal features<br>Weather features<br>Transport features<br>Interaction features</div>
-            </div>
-            <div class="doc-arch-box">
-                <div class="title">Database</div>
-                <div class="desc">SQLite<br>6 tables<br>Indexes<br>SQL queries</div>
-            </div>
-            <div class="doc-arch-box">
-                <div class="title">Frontend</div>
-                <div class="desc">Flask + HTML/JS<br>Chart.js visuals<br>SQL explorer<br>Test runner</div>
+                <div class="log-panel" id="logPanel">
+                    <div class="log-line">Ready to run pipeline</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="doc-section">
-        <h3>3. Data Acquisition</h3>
-        <p>The pipeline acquires data from <strong>four sources</strong> using two methods:</p>
-        <p><strong>API Sources:</strong></p>
-        <p><code>fetch_openweather_current()</code> — Calls the OpenWeatherMap REST API to retrieve real-time Dublin weather (temperature, humidity, wind, rain, clouds). Uses free tier (1,000 calls/day). Returns a parsed dictionary with error handling and timeout protection.</p>
-        <p><code>fetch_open_meteo_historical()</code> — Calls the Open-Meteo archive API (no key required) to fetch hourly historical weather for Dublin (2018-2025). Implements rate limiting with <code>time.sleep()</code> between yearly chunks. Returns a DataFrame with ~60,000 hourly records.</p>
-        <p><strong>CSV Sources:</strong></p>
-        <p><code>load_met_eireann_daily()</code> — Reads Met Eireann Dublin Airport daily weather CSV. Handles 24 rows of station metadata, cleans string-to-numeric conversions. 30,000+ records from 1942-2026.</p>
-        <p><code>load_dublin_bus()</code> / <code>load_luas()</code> — Reads CSO transport statistics. Filters summary rows, combines Luas Red+Green lines into total. Monthly ridership data 2014-2024.</p>
+    <!-- DATABASE TAB -->
+    <div id="database" class="tab-content">
+        <div class="container">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-title">Table Browser</div>
+                <div class="table-browser" id="tableBrowser">
+                    <div class="loading">Loading tables...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">SQL Query Editor</div>
+                <textarea class="sql-input" id="sqlInput" placeholder="SELECT * FROM table_name LIMIT 10;"></textarea>
+                <button class="run-button" onclick="executeQuery()">Run Query</button>
+                <div id="queryResults"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="doc-section">
-        <h3>4. Feature Extraction</h3>
-        <p>Feature extraction transforms raw data into meaningful analytical variables. This is a critical step that enables correlation analysis between weather and transport patterns.</p>
+    <!-- TESTS TAB -->
+    <div id="tests" class="tab-content">
+        <div class="container">
+            <div class="card">
+                <div class="card-title">Test Suite</div>
+                <button class="run-button" onclick="runTests()" id="runTestsBtn">Run All Tests</button>
 
-        <p><strong>4.1 Temporal Features</strong> — <code>extract_temporal_features()</code></p>
-        <table class="feature-table">
-            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>year, month, day</code></td><td>Integer</td><td>Date components for grouping and filtering</td></tr>
-            <tr><td><code>weekday</code></td><td>String</td><td>Day name (Monday-Sunday)</td></tr>
-            <tr><td><code>is_weekend</code></td><td>Boolean</td><td>Weekend flag — transport patterns differ on weekends</td></tr>
-            <tr><td><code>season</code></td><td>Categorical</td><td>Meteorological season (Winter/Spring/Summer/Autumn)</td></tr>
-            <tr><td><code>quarter</code></td><td>Integer</td><td>Calendar quarter (Q1-Q4)</td></tr>
-        </table>
-
-        <p><strong>4.2 Weather Features</strong> — <code>extract_weather_features()</code></p>
-        <table class="feature-table">
-            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>avg_temp</code></td><td>Float</td><td>Mean of daily max/min temperature</td></tr>
-            <tr><td><code>temp_range</code></td><td>Float</td><td>Diurnal temperature range (max - min)</td></tr>
-            <tr><td><code>rain_category</code></td><td>Categorical</td><td>Rainfall classification: dry/light/moderate/heavy/very_heavy</td></tr>
-            <tr><td><code>is_rainy</code></td><td>Boolean</td><td>Rain flag (threshold > 0.2mm per Met Eireann)</td></tr>
-            <tr><td><code>wind_chill</code></td><td>Float</td><td>Apparent temperature factoring wind speed</td></tr>
-            <tr><td><code>weather_severity</code></td><td>Float (0-10)</td><td>Composite index: cold stress (25%) + rain intensity (50%) + wind (25%)</td></tr>
-            <tr><td><code>comfort_index</code></td><td>Float (0-10)</td><td>Inverse of severity — higher = more comfortable outdoor conditions</td></tr>
-        </table>
-
-        <p><strong>4.3 Transport Features</strong> — <code>extract_transport_features()</code></p>
-        <table class="feature-table">
-            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>passengers_norm</code></td><td>Float (0-1)</td><td>Min-max normalised passenger count for cross-mode comparison</td></tr>
-            <tr><td><code>yoy_change</code></td><td>Float (%)</td><td>Year-over-year percentage change in ridership</td></tr>
-            <tr><td><code>rolling_avg_3m</code></td><td>Float</td><td>3-month rolling average to smooth seasonal noise</td></tr>
-            <tr><td><code>is_covid</code></td><td>Boolean</td><td>Flag for 2020-2021 lockdown period (excluded from correlation analysis)</td></tr>
-        </table>
-
-        <p><strong>4.4 Interaction Features</strong> — <code>extract_merged_features()</code></p>
-        <table class="feature-table">
-            <tr><th>Feature</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>rain_group</code></td><td>Categorical</td><td>Tercile classification: low/mid/high rainfall months</td></tr>
-            <tr><td><code>temp_group</code></td><td>Categorical</td><td>Tercile classification: cold/mild/warm months</td></tr>
-            <tr><td><code>total_passengers</code></td><td>Integer</td><td>Combined bus + luas ridership</td></tr>
-            <tr><td><code>bus_share</code></td><td>Float (0-1)</td><td>Bus proportion of total public transport</td></tr>
-            <tr><td><code>weather_impact_score</code></td><td>Float (%)</td><td>Ridership deviation from seasonal mean — measures how weather shifts demand</td></tr>
-        </table>
+                <div id="testResults">
+                    <div style="margin-top: 1rem; color: #94a3b8;">Click "Run All Tests" to execute the test suite</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="doc-section">
-        <h3>5. Transformations</h3>
-        <p>Key transformation functions, each independently testable:</p>
-        <p><code>classify_rainfall(rain_mm)</code> — Categorises daily rainfall using Met Eireann meteorological thresholds. Handles NaN and negative values as 'unknown'.</p>
-        <p><code>compute_weather_severity(temp, rain, wind)</code> — Weighted composite index combining three normalised components. Rain gets 50% weight as it most directly affects transport decisions (people choosing not to walk to stops/stations).</p>
-        <p><code>normalise_passengers(series, method)</code> — Supports min-max (0-1 scaling) and z-score (mean=0, std=1) normalisation. Handles edge cases (constant series, zero standard deviation).</p>
-        <p><strong>COVID-19 Handling:</strong> Years 2020-2021 are flagged with <code>is_covid=True</code> and excluded from all correlation analyses. Lockdown-induced ridership collapse would create spurious weather-transport correlations if included.</p>
+    <!-- DOCUMENTS TAB -->
+    <div id="documents" class="tab-content">
+        <div class="container">
+            <!-- Project Overview -->
+            <div class="doc-section">
+                <h2>Project Overview</h2>
+                <p>
+                    This project analyzes the impact of weather conditions on public transport usage in Dublin, Ireland.
+                    It integrates real-time weather data with historical transport passenger counts to identify correlations,
+                    predict demand, and help transport authorities prepare for adverse weather conditions.
+                </p>
+                <p>
+                    The system collects data from five distinct APIs, processes it through a multi-stage ETL pipeline,
+                    stores results in SQLite, performs statistical analysis, and provides an interactive web dashboard
+                    for exploration and prediction.
+                </p>
+                <p>
+                    <strong>Key Outputs:</strong> Correlation coefficients showing weather-transport relationships,
+                    Kruskal-Wallis tests for group differences, a weather impact simulator, and comprehensive statistical
+                    documentation for presentation to stakeholders.
+                </p>
+            </div>
+
+            <!-- System Architecture -->
+            <div class="doc-section">
+                <h2>System Architecture</h2>
+                <p><strong>Frontend:</strong> Interactive HTML/CSS/JavaScript dashboard with Chart.js visualizations</p>
+                <p><strong>Backend:</strong> Flask REST API with 6 endpoints for data retrieval and pipeline control</p>
+                <p><strong>Database:</strong> SQLite with 8 tables storing weather, transport, and derived features</p>
+                <p><strong>Data Integration:</strong> 5 external APIs for weather and transport data collection</p>
+                <p><strong>Processing:</strong> Multi-stage ETL pipeline with temporal aggregation and feature engineering</p>
+            </div>
+
+            <!-- Data Acquisition -->
+            <div class="doc-section">
+                <h2>Data Acquisition</h2>
+                <p>The system sources data from five distinct APIs, each providing unique insights:</p>
+
+                <h3>1. Open-Meteo (Historical Weather)</h3>
+                <p>Free weather data service providing historical and forecast data without authentication.</p>
+                <div class="code-block python">
+GET /v1/archive?latitude=53.3498&longitude=-6.2603&start_date=2020-01-01&end_date=2024-12-31&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m
+                </div>
+                <p>Variables: Temperature, humidity, precipitation, wind speed</p>
+
+                <h3>2. OpenWeatherMap (Current Weather)</h3>
+                <p>Real-time weather data for Dublin. Requires API key but provides detailed current conditions.</p>
+                <div class="code-block python">
+GET /data/2.5/weather?q=Dublin&appid={API_KEY}&units=metric
+                </div>
+                <p>Variables: Current temperature, conditions, wind, clouds, pressure</p>
+
+                <h3>3. CSO PxStat REST API (Transport Passengers)</h3>
+                <p>Central Statistics Office Ireland - Official monthly passenger statistics.</p>
+                <div class="code-block python">
+GET /PxStat.Products/OpenData/api/v1/jsonstat/dimensions/TDM/TOA14
+GET /PxStat.Products/OpenData/api/v1/jsonstat/dimensions/TDM/TOA11
+                </div>
+                <p>TOA14: Dublin Bus monthly passengers | TOA11: Luas monthly passengers</p>
+
+                <h3>4. Luas Forecasting API (Real-time Trams)</h3>
+                <p>Real-time XML feed of Luas tram forecasting data for all stops.</p>
+                <div class="code-block python">
+GET https://www.luas.ie/forecasting/ASTI/en
+                </div>
+                <p>Variables: Stop names, due times, destinations, tram directions</p>
+
+                <h3>5. Irish Rail API (Real-time Trains)</h3>
+                <p>Real-time XML feed of Irish Rail train positions and status.</p>
+                <div class="code-block python">
+GET http://api.irishrail.ie/realtime/realtime.asmx/getTrainsXML?TrainType=all
+                </div>
+                <p>Variables: Train status, location (lat/lon), delays, direction, type</p>
+            </div>
+
+            <!-- Feature Extraction -->
+            <div class="doc-section">
+                <h2>Feature Extraction</h2>
+                <p>Raw data is transformed into engineered features across four categories:</p>
+
+                <h3>Temporal Features</h3>
+                <ul>
+                    <li><code>year</code> — Calendar year (2020-2024)</li>
+                    <li><code>month</code> — Month (1-12)</li>
+                    <li><code>day</code> — Day of month (1-31)</li>
+                    <li><code>hour</code> — Hour (0-23)</li>
+                    <li><code>weekday</code> — Day of week (0=Monday, 6=Sunday)</li>
+                    <li><code>is_weekend</code> — Binary: Saturday or Sunday</li>
+                    <li><code>season</code> — Winter, Spring, Summer, Autumn</li>
+                    <li><code>is_rush_hour</code> — Binary: 7-9am or 5-7pm on weekdays</li>
+                </ul>
+
+                <h3>Weather Features</h3>
+                <ul>
+                    <li><code>rain_category</code> — None, Light, Moderate, Heavy</li>
+                    <li><code>is_rainy</code> — Binary: precipitation > 0.1mm</li>
+                    <li><code>wind_chill</code> — Calculated as: temp - 0.55 × (wind_speed - 4.8)</li>
+                    <li><code>weather_severity</code> — Composite: 25% cold + 50% rain + 25% wind</li>
+                    <li><code>comfort_index</code> — Inverse of severity (0-10 scale)</li>
+                    <li><code>temp_category</code> — Cold, Cool, Mild, Warm, Hot</li>
+                    <li><code>poor_visibility</code> — Binary: cloud_cover > 80%</li>
+                </ul>
+
+                <h3>Transport Features</h3>
+                <ul>
+                    <li><code>passengers_norm</code> — Z-score normalized passenger count</li>
+                    <li><code>yoy_change</code> — Year-on-year percentage change</li>
+                    <li><code>rolling_avg_3m</code> — 3-month rolling average</li>
+                    <li><code>is_covid</code> — Binary: March 2020 - May 2021</li>
+                </ul>
+
+                <h3>Interaction Features</h3>
+                <ul>
+                    <li><code>rain_group</code> — Categorical grouping of rain levels</li>
+                    <li><code>temp_group</code> — Categorical grouping of temperatures</li>
+                    <li><code>severity_group</code> — Categorical grouping of weather severity</li>
+                    <li><code>total_passengers</code> — Bus + Luas combined</li>
+                    <li><code>bus_share</code> — Bus / Total passengers (%)</li>
+                    <li><code>weather_impact_score</code> — Predicted passenger impact (0-100)</li>
+                </ul>
+            </div>
+
+            <!-- Transformations -->
+            <div class="doc-section">
+                <h2>Data Transformations</h2>
+                <h3>Temporal Aggregation</h3>
+                <p>
+                    Weather data (hourly from Open-Meteo) is aggregated to daily, then monthly.
+                    Transport data arrives monthly from CSO, so alignment is performed by matching
+                    year-month pairs.
+                </p>
+
+                <h3>Merging</h3>
+                <p>
+                    Weather monthly aggregates are merged with transport data using outer join on (year, month),
+                    forward-filling missing weather values (assumption: stable month weather represents the month).
+                </p>
+
+                <h3>COVID Exclusion</h3>
+                <p>
+                    March 2020 - May 2021 records are marked with is_covid=True and typically excluded from
+                    correlation analysis, as lockdowns created anomalous transport patterns.
+                </p>
+
+                <h3>Normalization & Scaling</h3>
+                <p>
+                    Passenger counts are Z-score normalized to enable comparison between bus (larger numbers)
+                    and Luas (smaller numbers).
+                </p>
+            </div>
+
+            <!-- Database Schema -->
+            <div class="doc-section">
+                <h2>Database Schema</h2>
+                <p>SQLite database with 8 tables storing raw and processed data:</p>
+
+                <h3>1. weather</h3>
+                <p>Historical monthly weather aggregates from Open-Meteo</p>
+                <div class="code-block">
+Columns: year, month, avg_temp, min_temp, max_temp, avg_humidity,
+total_rain, avg_wind_speed, avg_pressure, avg_cloud_cover, weather_code
+                </div>
+
+                <h3>2. transport_bus</h3>
+                <p>Dublin Bus monthly passenger counts from CSO</p>
+                <div class="code-block">
+Columns: year, month, passengers, data_quality
+                </div>
+
+                <h3>3. transport_luas</h3>
+                <p>Luas monthly passenger counts from CSO</p>
+                <div class="code-block">
+Columns: year, month, passengers, data_quality
+                </div>
+
+                <h3>4. merged_data</h3>
+                <p>Combined weather + transport with basic features</p>
+                <div class="code-block">
+Columns: year, month, temp, humidity, rain, wind_speed, pressure,
+cloud_cover, bus_passengers, luas_passengers, weather_code,
+total_passengers
+                </div>
+
+                <h3>5. features</h3>
+                <p>Full feature set including temporal, weather, transport, and interaction features</p>
+                <div class="code-block">
+Columns: All features listed in Feature Extraction section
+                </div>
+
+                <h3>6-8. statistics tables</h3>
+                <p>Pre-computed Pearson, Spearman, and Kruskal-Wallis test results for dashboard display</p>
+            </div>
+
+            <!-- Testing Strategy -->
+            <div class="doc-section">
+                <h2>Testing Strategy</h2>
+                <p>Comprehensive test suite with 45 tests across 12 test classes:</p>
+                <ul>
+                    <li><strong>API Tests:</strong> Verify endpoint responses and data structures</li>
+                    <li><strong>Data Validation:</strong> Check data types, ranges, null handling</li>
+                    <li><strong>Feature Engineering:</strong> Verify feature calculations and edge cases</li>
+                    <li><strong>Statistical Analysis:</strong> Validate correlation and test computations</li>
+                    <li><strong>Integration Tests:</strong> End-to-end pipeline execution</li>
+                    <li><strong>Database Tests:</strong> Table creation, data insertion, query results</li>
+                </ul>
+                <p>Test coverage includes unit tests (individual functions), integration tests (multi-component workflows),
+                and edge case testing (boundary values, null data, errors).</p>
+            </div>
+
+            <!-- Statistical Analysis -->
+            <div class="doc-section">
+                <h2>Statistical Analysis Methods</h2>
+
+                <h3>Pearson Correlation</h3>
+                <p>Measures linear relationship between continuous variables (temperature, rain, wind) and passenger counts.</p>
+                <div class="code-block python">
+r = Σ[(x - μx)(y - μy)] / √[Σ(x - μx)² × Σ(y - μy)²]
+                </div>
+                <p>Interpretation: r ∈ [-1, 1]. Values closer to ±1 indicate strong relationships.</p>
+
+                <h3>Spearman Rank Correlation</h3>
+                <p>Non-parametric correlation measuring monotonic relationships; less sensitive to outliers.</p>
+                <div class="code-block python">
+ρ = 1 - [6Σd² / n(n²-1)]  where d = rank difference
+                </div>
+
+                <h3>Kruskal-Wallis H-Test</h3>
+                <p>Non-parametric test determining if passenger counts differ across categorical weather/time groups.</p>
+                <div class="code-block python">
+H = (12 / n(n+1)) × Σ[R²ᵢ / nᵢ] - 3(n+1)
+                </div>
+                <p>H-statistic compared to χ² distribution; p &lt; 0.05 indicates significant differences.</p>
+
+                <h3>Simulator: Nearest-Neighbor Prediction</h3>
+                <p>Given test conditions (temp, rain, wind), finds k=5 nearest historical months by Euclidean distance
+                and averages their passenger counts for prediction.</p>
+            </div>
+
+            <!-- Ethical Considerations -->
+            <div class="doc-section">
+                <h2>Ethical Considerations & AI Disclosure</h2>
+                <p><strong>Level 4 AI Disclosure:</strong> This project used large language models (GPT-4 / Claude)
+                for code generation, debugging, and documentation drafting.</p>
+
+                <h3>Privacy & Data Use</h3>
+                <ul>
+                    <li>All data sources are official public statistics (CSO) or open APIs (Open-Meteo, Luas, Irish Rail)</li>
+                    <li>No personal data collected; analysis is at aggregate (monthly) level only</li>
+                    <li>Real-time transport data (Luas, Irish Rail) is public feed; no user tracking</li>
+                </ul>
+
+                <h3>Transparency</h3>
+                <ul>
+                    <li>All methods documented (feature definitions, statistical tests)</li>
+                    <li>Code and data transformations available for audit</li>
+                    <li>Results include statistical significance (p-values) to prevent overinterpretation</li>
+                </ul>
+
+                <h3>Limitations & Bias</h3>
+                <ul>
+                    <li>COVID period (2020-2021) excluded due to anomalous behavior</li>
+                    <li>Correlations do not imply causation; weather is one of many factors affecting transport use</li>
+                    <li>CSO data lags by ~2 weeks; real-time Luas/Rail used for current conditions only</li>
+                    <li>Analysis assumes 2020-2024 patterns persist; future structural changes may alter relationships</li>
+                </ul>
+            </div>
+
+            <!-- Attributions -->
+            <div class="doc-section">
+                <h2>Data Sources & Attributions</h2>
+                <ul>
+                    <li><strong>Open-Meteo:</strong> Historical and forecast weather data (CC0 1.0 Universal)</li>
+                    <li><strong>OpenWeatherMap:</strong> Current weather conditions (Terms of Use)</li>
+                    <li><strong>CSO PxStat:</strong> Central Statistics Office Ireland transport data (CC-BY 4.0)</li>
+                    <li><strong>Luas Forecasting:</strong> Transdev Ireland (real-time public feed)</li>
+                    <li><strong>Irish Rail API:</strong> Irish Rail (real-time public feed)</li>
+                    <li><strong>Chart.js:</strong> Open-source charting library (MIT)</li>
+                    <li><strong>AI Tools:</strong> GPT-4 and Claude for code assistance (Disclosed)</li>
+                </ul>
+                <p><strong>Project:</strong> B9AI001 CA2 Assessment, Data & Probability for AI, Dublin Business School</p>
+                <p><strong>Student:</strong> Bahadir | <strong>Date:</strong> Academic Year 2024-25</p>
+            </div>
+        </div>
     </div>
 
-    <div class="doc-section">
-        <h3>6. Database Schema</h3>
-        <p>Data is stored in a normalised SQLite database with 6 tables and indexed for query performance:</p>
-        <pre>
-weather_daily        — 30,000+ rows: daily weather + extracted features
-weather_monthly      — 1,000+ rows: monthly weather aggregates
-bus_passengers       — 130+ rows: Dublin Bus monthly ridership + features
-luas_passengers      — 80+ rows: Luas monthly ridership + features
-weather_transport_merged — 60+ rows: joined weather-transport for analysis
-api_weather_log      — API-fetched weather records</pre>
-        <p>Indexes on <code>(year, month)</code> and <code>season</code> columns enable fast filtering in dashboard queries.</p>
-    </div>
+    <script>
+        // Global state
+        let charts = {};
+        let autoRefreshInterval = null;
+        let pipelinePollInterval = null;
 
-    <div class="doc-section">
-        <h3>7. Testing Strategy</h3>
-        <p>The test suite includes <strong>unit tests</strong> for each transformation function and an <strong>integration test</strong> that verifies the full pipeline round-trip:</p>
-        <p><strong>Unit Tests:</strong> classify_rainfall (7 tests), map_season (5 tests), compute_weather_severity (5 tests), normalise_passengers (6 tests), validate_dataframe (4 tests), extract_temporal_features (3 tests), extract_weather_features (3 tests).</p>
-        <p><strong>Integration Test:</strong> Simulates the full pipeline — creates sample data, applies feature extraction and transformations, stores in a test database, queries back using SQL (simulating a frontend request), and validates data integrity across the round-trip. This tests the interaction between frontend (data retrieval) and backend (storage).</p>
-    </div>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            startAutoRefresh();
+        });
 
-    <div class="doc-section">
-        <h3>8. Ethical Considerations</h3>
-        <p><strong>Data Privacy:</strong> All datasets contain aggregated statistics only. No personally identifiable information (PII) is collected or processed.</p>
-        <p><strong>API Compliance:</strong> Both APIs are used within their free-tier limits. Rate limiting (<code>time.sleep()</code>) prevents excessive load on external servers. API keys are stored as configuration variables, not hardcoded.</p>
-        <p><strong>Data Licensing:</strong> All data sources use Creative Commons Attribution 4.0 licences. Full attribution is provided in Section 9.</p>
-        <p><strong>Bias Awareness:</strong> COVID-19 lockdowns created anomalous transport patterns. Excluding 2020-2021 from analysis prevents misleading conclusions while preserving the data for context.</p>
-    </div>
+        // Tab switching
+        function switchTab(event, tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
-    <div class="doc-section">
-        <h3>9. Attributions & Licences</h3>
-        <table class="feature-table">
-            <tr><th>Source</th><th>Data</th><th>Licence</th></tr>
-            <tr><td>Met Eireann</td><td>Daily & monthly weather (Dublin Airport)</td><td>CC BY 4.0</td></tr>
-            <tr><td>CSO Ireland</td><td>Dublin Bus (TOA14), Luas (TOA11), Weekly journeys (THA25)</td><td>CC BY 4.0</td></tr>
-            <tr><td>OpenWeatherMap</td><td>Current weather API</td><td>CC BY-SA 4.0</td></tr>
-            <tr><td>Open-Meteo</td><td>Historical hourly weather</td><td>CC BY 4.0</td></tr>
-        </table>
-        <br>
-        <table class="feature-table">
-            <tr><th>Library</th><th>Purpose</th><th>Licence</th></tr>
-            <tr><td>Flask</td><td>Web framework / API server</td><td>BSD 3-Clause</td></tr>
-            <tr><td>pandas / numpy</td><td>Data manipulation</td><td>BSD 3-Clause</td></tr>
-            <tr><td>scipy</td><td>Statistical testing</td><td>BSD 3-Clause</td></tr>
-            <tr><td>Chart.js</td><td>Frontend visualisation</td><td>MIT</td></tr>
-            <tr><td>requests</td><td>HTTP API calls</td><td>Apache 2.0</td></tr>
-        </table>
-        <br>
-        <p><strong>AI Usage Disclosure (Level 4):</strong> AI tools (Claude, Anthropic) were used to assist with code structure, documentation, and debugging. All AI-generated content has been reviewed, modified, and validated. Pipeline logic, statistical analysis, and findings are original student work. Prompt-response histories available upon request.</p>
-    </div>
-</div>
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
 
-<!-- ===================== JAVASCRIPT ===================== -->
-<script>
-// --- TAB NAVIGATION ---
-function showTab(name) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    event.target.classList.add('active');
-
-    if (name === 'dashboard') loadDashboard();
-    if (name === 'database') loadTables();
-}
-
-// --- DASHBOARD ---
-let dashLoaded = false;
-let chartInstances = {};
-
-function destroyChart(id) {
-    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
-}
-
-async function loadDashboard() {
-    if (dashLoaded) return;
-    try {
-        const [dashRes, statsRes] = await Promise.all([
-            fetch('/api/dashboard/data'), fetch('/api/stats')
-        ]);
-        if (!dashRes.ok) throw new Error('No data');
-        const dash = await dashRes.json();
-        const stats = statsRes.ok ? await statsRes.json() : null;
-
-        document.getElementById('dash-loading').style.display = 'none';
-        document.getElementById('dash-content').style.display = 'block';
-
-        // Summary cards
-        if (stats && stats.summary) {
-            const s = stats.summary;
-            document.getElementById('summary-cards').innerHTML = `
-                <div class="card"><div class="card-label">Records</div><div class="card-value">${s.total_records}</div><div class="card-sub">Monthly observations (ex-COVID)</div></div>
-                <div class="card"><div class="card-label">Avg Bus Passengers</div><div class="card-value">${(s.avg_bus/1e6).toFixed(1)}M</div><div class="card-sub">per month</div></div>
-                <div class="card"><div class="card-label">Avg Luas Passengers</div><div class="card-value">${(s.avg_luas/1e6).toFixed(1)}M</div><div class="card-sub">per month</div></div>
-                <div class="card"><div class="card-label">Period</div><div class="card-value">${s.year_range}</div><div class="card-sub">Avg rain ${s.avg_rain}mm, temp ${s.avg_temp}°C</div></div>
-            `;
+            // Load tab-specific data
+            if (tabName === 'database') {
+                loadTables();
+            }
         }
 
-        // Timeline chart
-        if (dash.bus_timeline && dash.luas_timeline) {
-            const busData = dash.bus_timeline;
-            const luasData = dash.luas_timeline;
-            destroyChart('chart-timeline');
-            chartInstances['chart-timeline'] = new Chart(document.getElementById('chart-timeline'), {
-                type: 'line',
-                data: {
-                    labels: busData.map(d => `${d.year}-${String(d.month).padStart(2,'0')}`),
-                    datasets: [
-                        { label: 'Dublin Bus', data: busData.map(d => d.passengers), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 0 },
-                        { label: 'Luas', data: luasData.map(d => d.passengers), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3, pointRadius: 0 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { ticks: { maxTicksLimit: 12, color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+        // Auto-refresh dashboard every 60 seconds
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                refreshLiveData();
+            }, 60000);
+        }
+
+        // Manual refresh
+        function refreshDashboard() {
+            const btn = document.querySelector('.refresh-button');
+            const spinner = document.getElementById('refreshSpinner');
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+
+            Promise.all([
+                fetchLiveData(),
+                fetchDashboardData()
+            ]).then(() => {
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+            }).catch(err => {
+                console.error('Refresh error:', err);
+                btn.disabled = false;
+                spinner.classList.add('hidden');
             });
         }
 
-        // Seasonal chart
-        if (dash.seasonal) {
-            const order = ['Winter', 'Spring', 'Summer', 'Autumn'];
-            const sorted = order.map(s => dash.seasonal.find(d => d.season === s)).filter(Boolean);
-            destroyChart('chart-seasonal');
-            chartInstances['chart-seasonal'] = new Chart(document.getElementById('chart-seasonal'), {
-                type: 'bar',
-                data: {
-                    labels: sorted.map(d => d.season),
-                    datasets: [
-                        { label: 'Bus', data: sorted.map(d => d.avg_bus), backgroundColor: '#3b82f6' },
-                        { label: 'Luas', data: sorted.map(d => d.avg_luas), backgroundColor: '#22c55e' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+        function refreshLiveData() {
+            fetchLiveData().catch(err => console.error('Auto-refresh error:', err));
+        }
+
+        // Load dashboard data
+        function loadDashboard() {
+            Promise.all([
+                fetchLiveData(),
+                fetchDashboardData(),
+                fetchStats()
+            ]).catch(err => {
+                console.error('Dashboard load error:', err);
+                showError('Failed to load dashboard data');
             });
         }
 
-        // Scatter plots
-        if (dash.merged) {
-            const m = dash.merged;
-            const colors = { Winter: '#3b82f6', Spring: '#22c55e', Summer: '#eab308', Autumn: '#f97316' };
+        // Fetch live weather and transport
+        async function fetchLiveData() {
+            try {
+                const response = await fetch('/api/live');
+                const data = await response.json();
 
-            // Rain scatter
-            destroyChart('chart-scatter-rain');
-            chartInstances['chart-scatter-rain'] = new Chart(document.getElementById('chart-scatter-rain'), {
-                type: 'scatter',
-                data: { datasets: Object.keys(colors).map(s => ({ label: s, data: m.filter(d => d.season===s).map(d => ({x: d.rain, y: d.bus_passengers})), backgroundColor: colors[s], pointRadius: 5 })) },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Passengers', color: '#94a3b8' }, ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { title: { display: true, text: 'Rainfall (mm)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
-            });
+                // Update timestamp
+                const now = new Date();
+                document.getElementById('lastUpdated').textContent =
+                    now.toLocaleTimeString('en-IE', { hour12: false });
 
-            // Temp scatter
-            destroyChart('chart-scatter-temp');
-            chartInstances['chart-scatter-temp'] = new Chart(document.getElementById('chart-scatter-temp'), {
-                type: 'scatter',
-                data: { datasets: Object.keys(colors).map(s => ({ label: s, data: m.filter(d => d.season===s).map(d => ({x: d.meant, y: d.bus_passengers})), backgroundColor: colors[s], pointRadius: 5 })) },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Passengers', color: '#94a3b8' }, ticks: { callback: v => (v/1e6).toFixed(1)+'M', color: '#94a3b8' }, grid: { color: '#1e293b' } }, x: { title: { display: true, text: 'Temperature (°C)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
-            });
+                // Update weather
+                updateWeatherCard(data.weather);
+
+                // Update transport
+                updateLuasData(data.luas);
+                updateRailData(data.rail);
+
+                document.getElementById('luasCount').textContent = data.luas_count || 0;
+            } catch (err) {
+                console.error('Live data error:', err);
+                showError('Could not fetch live data');
+            }
         }
 
-        // Correlation table
-        if (stats && stats.bus) {
-            const tbody = document.querySelector('#corr-table tbody');
-            tbody.innerHTML = '';
-            [['Dublin Bus', stats.bus], ['Luas', stats.luas]].forEach(([mode, corrs]) => {
-                (corrs||[]).forEach(c => {
-                    tbody.innerHTML += `<tr>
-                        <td>${mode}</td><td>${c.variable}</td>
-                        <td>${c.pearson_r.toFixed(3)}</td><td>${c.pearson_p.toFixed(4)}</td>
-                        <td>${c.spearman_r.toFixed(3)}</td><td>${c.spearman_p.toFixed(4)}</td>
-                        <td>${c.significant ? '<span style="color:#4ade80">Yes</span>' : '<span style="color:#64748b">No</span>'}</td>
-                    </tr>`;
+        function updateWeatherCard(weather) {
+            document.getElementById('tempValue').textContent = Math.round(weather.temp) + '°';
+            document.getElementById('weatherDesc').textContent = weather.description || 'Unknown';
+            document.getElementById('humidityValue').textContent = (weather.humidity || 0) + '%';
+            document.getElementById('windValue').textContent = (weather.wind_speed || 0).toFixed(1) + ' km/h';
+            document.getElementById('rainValue').textContent = (weather.rain || 0).toFixed(1) + ' mm';
+            document.getElementById('pressureValue').textContent = (weather.pressure || 0).toFixed(0) + ' hPa';
+
+            const severity = weather.severity || 0;
+            document.getElementById('severityValue').textContent = Math.round(severity * 10) / 10;
+            const severityPct = Math.min(100, (severity / 10) * 100);
+            document.getElementById('severityFill').style.width = severityPct + '%';
+        }
+
+        function updateLuasData(luasTrams) {
+            const container = document.getElementById('luasContainer');
+            if (!luasTrams || luasTrams.length === 0) {
+                container.innerHTML = '<div class="empty-state">No Luas trams currently active</div>';
+                return;
+            }
+
+            const grouped = {};
+            luasTrams.forEach(tram => {
+                const key = tram.stop;
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(tram);
+            });
+
+            container.innerHTML = Object.entries(grouped).map(([stop, trams]) => {
+                const tram = trams[0];
+                return `
+                    <div class="transport-item">
+                        <div class="transport-stop">${stop}</div>
+                        <div class="transport-detail">To: ${tram.destination || 'Unknown'}</div>
+                        <div class="transport-detail">Line: ${tram.direction || 'N/A'}</div>
+                        <div class="transport-due">${tram.due_mins} min</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateRailData(trains) {
+            const container = document.getElementById('railContainer');
+            if (!trains || trains.length === 0) {
+                container.innerHTML = '<div class="empty-state">No Irish Rail trains currently active</div>';
+                return;
+            }
+
+            const delayedOnly = trains.filter(t =>
+                t.message && (t.message.toLowerCase().includes('delay') ||
+                t.message.toLowerCase().includes('late'))
+            );
+
+            if (delayedOnly.length === 0) {
+                container.innerHTML = '<div class="empty-state">All trains on schedule</div>';
+                return;
+            }
+
+            container.innerHTML = delayedOnly.map(train => `
+                <div class="transport-item">
+                    <div class="transport-stop">${train.code || 'Unknown'}</div>
+                    <div class="transport-detail">${train.direction || 'N/A'}</div>
+                    <div class="transport-detail" style="color: #ef4444;"> ${train.message}</div>
+                </div>
+            `).join('');
+        }
+
+        // Fetch historical dashboard data
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/data');
+                const data = await response.json();
+
+                updateCharts(data);
+            } catch (err) {
+                console.error('Dashboard data error:', err);
+            }
+        }
+
+        function updateCharts(data) {
+            // Timeline Chart
+            if (data.luas_timeline && data.luas_timeline.length > 0) {
+                const ctx = document.getElementById('timelineChart');
+                if (charts.timeline) charts.timeline.destroy();
+
+                const labels = data.luas_timeline.map(d => `${d[0]}-${String(d[1]).padStart(2, '0')}`);
+                const busData = data.bus_timeline || [];
+                const luasData = data.luas_timeline.map(d => d[2]);
+
+                charts.timeline = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Bus Passengers',
+                                data: busData.map(d => d[2] || 0),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Luas Passengers',
+                                data: luasData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e2e8f0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                        }
+                    }
                 });
-            });
-        }
+            }
 
-        dashLoaded = true;
-    } catch(e) {
-        document.getElementById('dash-loading').textContent = 'No data available. Go to the Pipeline tab and run the pipeline first.';
-    }
-}
+            // Seasonal Chart
+            if (data.seasonal && data.seasonal.length > 0) {
+                const ctx = document.getElementById('seasonalChart');
+                if (charts.seasonal) charts.seasonal.destroy();
 
-// --- PIPELINE ---
-async function runPipeline() {
-    const btn = document.getElementById('btn-run-pipeline');
-    btn.disabled = true;
+                const seasons = ['Winter', 'Spring', 'Summer', 'Autumn'];
+                const avgData = data.seasonal.reduce((acc, d) => {
+                    acc[d[0]] = d[1];
+                    return acc;
+                }, {});
 
-    const apiKey = document.getElementById('owm-key').value;
-    const stepIds = ['acquisition', 'extraction', 'transform', 'database'];
-    stepIds.forEach(s => {
-        document.querySelector(`#step-${s} .step-icon`).className = 'step-icon pending';
-    });
+                charts.seasonal = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: seasons,
+                        datasets: [
+                            {
+                                label: 'Avg Bus Passengers',
+                                data: seasons.map((_, i) => avgData[i] || 0),
+                                backgroundColor: '#3b82f6'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e2e8f0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                        }
+                    }
+                });
+            }
 
-    document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot yellow"></span> Running...';
+            // Weather Correlation Scatter
+            const ctx = document.getElementById('weatherCorrelationChart');
+            if (charts.correlation) charts.correlation.destroy();
 
-    await fetch('/api/pipeline/run', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({api_key: apiKey})
-    });
-
-    // Animate steps
-    for (let i = 0; i < stepIds.length; i++) {
-        document.querySelector(`#step-${stepIds[i]} .step-icon`).className = 'step-icon running';
-        await new Promise(r => setTimeout(r, 1500));
-
-        // Poll status
-        const res = await fetch('/api/pipeline/status');
-        const state = await res.json();
-
-        if (state.result && state.result.steps) {
-            for (let j = 0; j <= i; j++) {
-                if (state.result.steps[j]) {
-                    const icon = document.querySelector(`#step-${stepIds[j]} .step-icon`);
-                    icon.className = `step-icon ${state.result.steps[j].status}`;
-                    icon.textContent = state.result.steps[j].status === 'complete' ? '✓' : j+1;
-
-                    // Show details
-                    const details = state.result.steps[j].details;
-                    if (details) {
-                        const detailEl = document.querySelector(`#step-${stepIds[j]} .step-details`);
-                        detailEl.innerHTML = Object.entries(details).map(([k,v]) =>
-                            `<div class="step-detail-item"><strong>${k}:</strong> ${Array.isArray(v) ? v.join(', ') : v}</div>`
-                        ).join('');
+            charts.correlation = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Temperature vs Bus Passengers',
+                            data: (data.impact || []).slice(0, 50).map(d => ({
+                                x: d[0],
+                                y: d[1]
+                            })),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.3)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0' } }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Temperature (°C)', color: '#e2e8f0' },
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Passengers', color: '#e2e8f0' },
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        }
                     }
                 }
-            }
-        }
-    }
-
-    // Final poll
-    await new Promise(r => setTimeout(r, 2000));
-    const finalRes = await fetch('/api/pipeline/status');
-    const finalState = await finalRes.json();
-
-    if (finalState.status === 'complete') {
-        document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot green"></span> Complete';
-        stepIds.forEach(s => {
-            const icon = document.querySelector(`#step-${s} .step-icon`);
-            icon.className = 'step-icon complete';
-            icon.textContent = '✓';
-        });
-    } else if (finalState.status === 'running') {
-        // Still running, keep polling
-        setTimeout(async () => {
-            const r = await fetch('/api/pipeline/status');
-            const s = await r.json();
-            if (s.status === 'complete') {
-                document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot green"></span> Complete';
-            }
-        }, 5000);
-    } else {
-        document.getElementById('pipeline-status-text').innerHTML = '<span class="status-dot red"></span> Failed';
-    }
-
-    dashLoaded = false;
-    btn.disabled = false;
-}
-
-// --- DATABASE ---
-async function loadTables() {
-    try {
-        const res = await fetch('/api/tables');
-        if (!res.ok) return;
-        const tables = await res.json();
-        document.getElementById('db-tables').innerHTML = tables.map(t =>
-            `<div class="card" style="cursor:pointer" onclick="queryTable('${t.name}')">
-                <div class="card-label">${t.name}</div>
-                <div class="card-value">${t.rows.toLocaleString()}</div>
-                <div class="card-sub">${t.columns.length} columns</div>
-            </div>`
-        ).join('');
-    } catch(e) {}
-}
-
-function queryTable(name) {
-    document.getElementById('sql-input').value = `SELECT * FROM ${name} LIMIT 50`;
-    executeQuery();
-}
-
-async function executeQuery() {
-    const sql = document.getElementById('sql-input').value.trim();
-    if (!sql) return;
-
-    document.getElementById('query-status').textContent = 'Running...';
-    try {
-        const res = await fetch(`/api/query?sql=${encodeURIComponent(sql)}`);
-        const data = await res.json();
-
-        if (data.error) {
-            document.getElementById('query-status').textContent = `Error: ${data.error}`;
-            return;
-        }
-
-        document.getElementById('query-status').textContent = `${data.total_rows} rows returned`;
-        document.getElementById('query-result').style.display = 'block';
-
-        document.getElementById('result-thead').innerHTML =
-            '<tr>' + data.columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
-        document.getElementById('result-tbody').innerHTML =
-            data.data.map(row =>
-                '<tr>' + data.columns.map(c => `<td>${row[c] !== null ? row[c] : '<span style="color:#64748b">NULL</span>'}</td>`).join('') + '</tr>'
-            ).join('');
-    } catch(e) {
-        document.getElementById('query-status').textContent = 'Error: ' + e.message;
-    }
-}
-
-// --- TESTS ---
-async function runTests() {
-    const btn = document.getElementById('btn-run-tests');
-    btn.disabled = true;
-    btn.textContent = 'Running...';
-    document.getElementById('test-summary').innerHTML = '';
-
-    try {
-        const res = await fetch('/api/tests/run');
-        const data = await res.json();
-
-        const badge = data.success ? 'pass' : 'fail';
-        document.getElementById('test-summary').innerHTML = `
-            <span class="test-badge ${badge}">${data.passed}/${data.total} PASSED</span>
-            ${data.failed > 0 ? `<span class="test-badge fail">${data.failed} FAILED</span>` : ''}
-            ${data.errors > 0 ? `<span class="test-badge fail">${data.errors} ERRORS</span>` : ''}
-        `;
-
-        let html = '';
-        // Show failures
-        if (data.failures && data.failures.length > 0) {
-            html += '<h3 style="color:#f87171; margin:12px 0 8px;">Failed Tests</h3>';
-            data.failures.forEach(f => {
-                html += `<div class="test-result test-fail">✗ ${f.test}<br><small style="color:#94a3b8">${f.message}</small></div>`;
-            });
-        }
-        if (data.error_list && data.error_list.length > 0) {
-            html += '<h3 style="color:#f87171; margin:12px 0 8px;">Errors</h3>';
-            data.error_list.forEach(e => {
-                html += `<div class="test-result test-fail">✗ ${e.test}<br><small style="color:#94a3b8">${e.message}</small></div>`;
             });
         }
 
-        // All passed message
-        if (data.success) {
-            html += `<div style="padding:16px; color:#4ade80; font-size:14px;">All ${data.total} tests passed successfully (${data.total - 1} unit tests + 1 integration test)</div>`;
+        // Fetch statistics
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                // Bus correlations
+                const busTable = document.getElementById('busCorrelations');
+                busTable.innerHTML = (data.bus || []).map(row => `
+                    <tr>
+                        <td>${row.variable}</td>
+                        <td>${row.pearson_r.toFixed(3)}</td>
+                        <td>${row.pearson_p.toFixed(4)}</td>
+                        <td>${row.spearman_r.toFixed(3)}</td>
+                        <td class="${row.significant ? 'significant' : 'not-significant'}">
+                            ${row.significant ? 'Yes' : 'No'}
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Luas correlations
+                const luasTable = document.getElementById('luasCorrelations');
+                luasTable.innerHTML = (data.luas || []).map(row => `
+                    <tr>
+                        <td>${row.variable}</td>
+                        <td>${row.pearson_r.toFixed(3)}</td>
+                        <td>${row.pearson_p.toFixed(4)}</td>
+                        <td>${row.spearman_r.toFixed(3)}</td>
+                        <td class="${row.significant ? 'significant' : 'not-significant'}">
+                            ${row.significant ? 'Yes' : 'No'}
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Kruskal-Wallis
+                const kwTable = document.getElementById('kruskalResults');
+                kwTable.innerHTML = (data.kruskal_wallis || []).map(row => `
+                    <tr>
+                        <td>${row.test}</td>
+                        <td>${row.statistic.toFixed(4)}</td>
+                        <td>${row.p_value.toFixed(4)}</td>
+                        <td class="${row.significant ? 'significant' : 'not-significant'}">
+                            ${row.significant ? 'Yes' : 'No'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Stats error:', err);
+            }
         }
 
-        document.getElementById('test-results').innerHTML = html;
-        document.getElementById('test-results').style.display = 'block';
+        // Slider updates
+        function updateSliderLabel(sliderId, labelId, unit) {
+            const slider = document.getElementById(sliderId);
+            document.getElementById(labelId).textContent = slider.value;
+        }
 
-    } catch(e) {
-        document.getElementById('test-summary').innerHTML = `<span class="test-badge fail">Error: ${e.message}</span>`;
-    }
+        // Weather simulator
+        async function simulateWeatherImpact() {
+            const temp = document.getElementById('tempSlider').value;
+            const rain = document.getElementById('rainSlider').value;
+            const wind = document.getElementById('windSlider').value;
 
-    btn.disabled = false;
-    btn.textContent = 'Run All Tests';
-}
+            try {
+                const response = await fetch(`/api/dashboard/simulate?temp=${temp}&rain=${rain}&wind=${wind}`);
+                const data = await response.json();
 
-// --- INIT ---
-loadDashboard();
-</script>
+                const resultsDiv = document.getElementById('simulatorResults');
+                const severityColor = data.severity < 3 ? '#10b981' : data.severity < 6 ? '#f59e0b' : '#ef4444';
+
+                resultsDiv.innerHTML = `
+                    <div class="results-grid">
+                        <div class="result-box">
+                            <div class="result-label">Predicted Bus Passengers</div>
+                            <div class="result-value">${Math.round(data.predicted_bus)}</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Predicted Luas Passengers</div>
+                            <div class="result-value">${Math.round(data.predicted_luas)}</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Bus Impact</div>
+                            <div class="result-value">${data.bus_impact_pct.toFixed(1)}%</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Luas Impact</div>
+                            <div class="result-value">${data.luas_impact_pct.toFixed(1)}%</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Weather Severity</div>
+                            <div class="result-value" style="color: ${severityColor};">${data.severity.toFixed(1)}/10</div>
+                        </div>
+                    </div>
+                    ${data.similar_months ? `
+                        <div style="margin-top: 1rem; color: #94a3b8; font-size: 0.9rem;">
+                            Similar historical months: ${data.similar_months.join(', ')}
+                        </div>
+                    ` : ''}
+                `;
+            } catch (err) {
+                console.error('Simulator error:', err);
+                showError('Simulation failed');
+            }
+        }
+
+        // Pipeline
+        async function runPipeline() {
+            const apiKey = document.getElementById('apiKeyInput').value || '';
+            const btn = document.getElementById('runPipelineBtn');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/pipeline/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+
+                if (response.ok) {
+                    pollPipelineStatus();
+                }
+            } catch (err) {
+                console.error('Pipeline error:', err);
+                showError('Failed to start pipeline');
+                btn.disabled = false;
+            }
+        }
+
+        async function pollPipelineStatus() {
+            const logPanel = document.getElementById('logPanel');
+
+            const poll = async () => {
+                try {
+                    const response = await fetch('/api/pipeline/status');
+                    const data = response.ok ? await response.json() : {};
+
+                    // Update steps
+                    const steps = document.querySelectorAll('.pipeline-step');
+                    const stepOrder = ['data_acquisition', 'feature_extraction', 'transformations', 'database_loading'];
+                    const stepNames = ['Data Acquisition', 'Feature Extraction', 'Transformations', 'Database Loading'];
+
+                    stepOrder.forEach((step, idx) => {
+                        const stepEl = steps[idx];
+                        let status = 'pending';
+                        let icon = '';
+                        let detail = 'Waiting to start';
+
+                        if (data.current_step === step) {
+                            status = 'running';
+                            icon = '';
+                            detail = data.current_detail || 'Processing...';
+                        } else if (stepOrder.indexOf(data.current_step || '') > idx) {
+                            status = 'completed';
+                            icon = '';
+                            detail = 'Completed';
+                        } else if (data.status === 'failed') {
+                            status = 'failed';
+                            icon = '';
+                            detail = 'Failed';
+                        }
+
+                        stepEl.className = `pipeline-step ${status}`;
+                        stepEl.innerHTML = `
+                            <div class="step-icon">${icon}</div>
+                            <div class="step-content">
+                                <h4>${stepNames[idx]}</h4>
+                                <div class="step-detail">${detail}</div>
+                            </div>
+                        `;
+                    });
+
+                    // Update log
+                    if (data.log) {
+                        logPanel.innerHTML = data.log.map(line =>
+                            `<div class="log-line">${escapeHtml(line)}</div>`
+                        ).join('');
+                        logPanel.scrollTop = logPanel.scrollHeight;
+                    }
+
+                    // Re-poll if running
+                    if (data.status === 'running') {
+                        pipelinePollInterval = setTimeout(poll, 1500);
+                    } else {
+                        document.getElementById('runPipelineBtn').disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Status poll error:', err);
+                    document.getElementById('runPipelineBtn').disabled = false;
+                }
+            };
+
+            poll();
+        }
+
+        // Database
+        async function loadTables() {
+            try {
+                const response = await fetch('/api/tables');
+                const tables = await response.json();
+
+                const browser = document.getElementById('tableBrowser');
+                browser.innerHTML = tables.map(table => `
+                    <div class="table-card" onclick="loadTableData('${table.name}')">
+                        <div class="table-name">${table.name}</div>
+                        <div class="table-info">Rows: ${table.rows.toLocaleString()}</div>
+                        <div class="table-info">Columns: ${table.columns.length}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Tables error:', err);
+                showError('Failed to load tables');
+            }
+        }
+
+        function loadTableData(tableName) {
+            document.getElementById('sqlInput').value = `SELECT * FROM ${tableName} LIMIT 10;`;
+            executeQuery();
+        }
+
+        async function executeQuery() {
+            const sql = document.getElementById('sqlInput').value;
+            const resultsDiv = document.getElementById('queryResults');
+
+            if (!sql.trim()) {
+                resultsDiv.innerHTML = '<div class="empty-state">Enter a SQL query and click Run Query</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="loading">Executing query...</div>';
+
+            try {
+                const response = await fetch(`/api/query?sql=${encodeURIComponent(sql)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    resultsDiv.innerHTML = `<div class="error">${escapeHtml(data.error)}</div>`;
+                    return;
+                }
+
+                if (data.data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="empty-state">No results</div>';
+                    return;
+                }
+
+                let html = `
+                    <p style="color: #94a3b8; margin: 1rem 0; font-size: 0.9rem;">
+                        ${data.total_rows} rows
+                    </p>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>${data.columns.map(col => `<th>${col}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>
+                            ${data.data.map(row => `
+                                <tr>${row.map(cell => `<td>${escapeHtml(String(cell))}</td>`).join('')}</tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                console.error('Query error:', err);
+                resultsDiv.innerHTML = '<div class="error">Query execution failed</div>';
+            }
+        }
+
+        // Tests
+        async function runTests() {
+            const btn = document.getElementById('runTestsBtn');
+            btn.disabled = true;
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading">Running tests...</div>';
+
+            try {
+                const response = await fetch('/api/tests/run');
+                const data = await response.json();
+
+                const passed = data.passed;
+                const total = data.total;
+                const badgeClass = data.failed > 0 ? 'failed' : '';
+
+                let html = `
+                    <div class="summary-badge ${badgeClass}">
+                        ${passed}/${total} tests passed
+                    </div>
+                `;
+
+                if (data.error_list && data.error_list.length > 0) {
+                    html += data.error_list.map(err => `
+                        <div class="test-result failed">
+                            <div class="test-name">${err.test_name}</div>
+                            <div class="test-message">${escapeHtml(err.message)}</div>
+                        </div>
+                    `).join('');
+                }
+
+                if (data.failures && data.failures.length > 0) {
+                    html += data.failures.map(fail => `
+                        <div class="test-result failed">
+                            <div class="test-name">${fail.test_name}</div>
+                            <div class="test-message">${escapeHtml(fail.message)}</div>
+                        </div>
+                    `).join('');
+                }
+
+                if (data.passed > 0) {
+                    html += `<div style="color: #94a3b8; margin-top: 1rem; font-size: 0.9rem;">
+                        All critical tests passed
+                    </div>`;
+                }
+
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                console.error('Tests error:', err);
+                resultsDiv.innerHTML = '<div class="error">Failed to run tests</div>';
+            }
+
+            btn.disabled = false;
+        }
+
+        // Utilities
+        function showError(message) {
+            console.error(message);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
 </body>
 </html>
