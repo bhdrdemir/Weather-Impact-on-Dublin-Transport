@@ -149,17 +149,23 @@ def fetch_cso_transport(table_id):
         resp.raise_for_status()
         data = resp.json()
 
-        # Parse JSON-stat 2.0 format
+        # Parse JSON-stat 2.0 format (value can be list or dict)
         dims = data['dimension']
         dim_keys = list(data['id'])
         values = data['value']
+        sizes = data.get('size') or [len(dims[k]['category']['index']) for k in dim_keys]
 
-        # Build index mapping
+        # Normalise to (flat_idx, value) iterable
+        if isinstance(values, list):
+            pairs = enumerate(values)
+        else:
+            pairs = ((int(k), v) for k, v in values.items())
+
         records = []
-        sizes = [len(dims[k]['category']['index']) for k in dim_keys]
-
-        for flat_idx, value in values.items():
-            idx = int(flat_idx)
+        for flat_idx, value in pairs:
+            if value is None:
+                continue
+            idx = flat_idx
             indices = []
             for s in reversed(sizes):
                 indices.insert(0, idx % s)
@@ -167,8 +173,13 @@ def fetch_cso_transport(table_id):
 
             labels = {}
             for i, k in enumerate(dim_keys):
-                cat_keys = list(dims[k]['category']['index'].keys())
+                cat_index = dims[k]['category']['index']
                 cat_labels = dims[k]['category']['label']
+                # index can be dict {code: position} or list [code, code, ...]
+                if isinstance(cat_index, dict):
+                    cat_keys = list(cat_index.keys())
+                else:
+                    cat_keys = list(cat_index)
                 if indices[i] < len(cat_keys):
                     labels[k] = cat_labels[cat_keys[indices[i]]]
 
@@ -442,14 +453,19 @@ def extract_merged_features(merged_df):
       weather_impact_score, severity_group
     """
     df = merged_df.copy()
+    if df.empty:
+        return df
 
-    # Weather tercile groups
+    # Weather tercile groups (duplicates='drop' handles low-variance data)
     df['rain_group'] = pd.qcut(df['total_rain'], 3,
-                                labels=['low rain', 'mid rain', 'high rain'])
+                                labels=['low rain', 'mid rain', 'high rain'],
+                                duplicates='drop')
     df['temp_group'] = pd.qcut(df['mean_temp'], 3,
-                                labels=['cold', 'mild', 'warm'])
+                                labels=['cold', 'mild', 'warm'],
+                                duplicates='drop')
     df['severity_group'] = pd.qcut(df['avg_severity'], 3,
-                                    labels=['pleasant', 'moderate', 'harsh'])
+                                    labels=['pleasant', 'moderate', 'harsh'],
+                                    duplicates='drop')
 
     # Combined transport
     if 'bus_passengers' in df.columns and 'luas_passengers' in df.columns:
@@ -735,43 +751,31 @@ def run_full_pipeline(owm_api_key=None, progress_callback=None):
         step = {'name': 'Data Acquisition', 'status': 'running', 'details': {}}
         notify('Data Acquisition', 'running', 'Fetching from 5 APIs...')
 
-        # 1a. Open-Meteo historical — fetch in 2 large chunks for speed
-        #     (Open-Meteo handles multi-year requests; max ~10k hours per call)
-        api_frames = []
-        today = datetime.now().strftime('%Y-%m-%d')
-        chunks = [('2022-01-01', '2023-12-31'), ('2024-01-01', today)]
-        for start, end in chunks:
-            notify('Data Acquisition', 'running', f'Open-Meteo: {start} → {end}...')
-            chunk = fetch_open_meteo_historical(start, end)
-            if not chunk.empty:
-                api_frames.append(chunk)
-            time.sleep(0.2)
-        weather_hourly = pd.concat(api_frames, ignore_index=True) if api_frames else pd.DataFrame()
+        # 1a. Open-Meteo historical — 2022 through latest archive-available day
+        #     Archive has ~5-day lag; go up to 5 days before today
+        start_date = '2022-01-01'
+        end_date = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
+        notify('Data Acquisition', 'running', f'Open-Meteo: {start_date} → {end_date}...')
+        weather_hourly = fetch_open_meteo_historical(start_date, end_date)
         step['details']['open_meteo'] = f'{len(weather_hourly):,} hourly records'
 
-        # 1b. OpenWeatherMap current
-        current = fetch_openweather_current(owm_api_key) if owm_api_key else None
-        step['details']['openweathermap'] = 'success' if current else 'skipped'
-
-        # 1c. CSO Dublin Bus
+        # 1b. CSO Dublin Bus passengers (monthly, all years)
         notify('Data Acquisition', 'running', 'CSO: Dublin Bus passengers...')
         bus_raw = fetch_cso_transport('TOA14')
         step['details']['cso_bus'] = f'{len(bus_raw)} records'
 
-        # 1d. CSO Luas
+        # 1c. CSO Luas passengers (monthly, all years)
         notify('Data Acquisition', 'running', 'CSO: Luas passengers...')
         luas_raw = fetch_cso_transport('TOA11')
         step['details']['cso_luas'] = f'{len(luas_raw)} records'
 
-        # 1e. Luas real-time (key stops only for speed)
-        notify('Data Acquisition', 'running', 'Luas: real-time tram arrivals...')
-        luas_rt = fetch_luas_all_stops(key_only=True)
-        step['details']['luas_realtime'] = f'{len(luas_rt)} tram arrivals'
-
-        # 1f. Irish Rail real-time
+        # 1d. Irish Rail real-time (fast, single call)
         notify('Data Acquisition', 'running', 'Irish Rail: real-time trains...')
         rail_rt = fetch_irish_rail_realtime()
         step['details']['irish_rail'] = f'{len(rail_rt)} active trains'
+
+        # Luas real-time is handled live by /api/live (not part of pipeline)
+        luas_rt = []
 
         step['status'] = 'complete'
         results['steps'].append(step)
