@@ -475,6 +475,45 @@ textarea:focus { outline: none; border-color: #16a34a; }
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">Dublin Weather Map <span class="tag">interactive</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:10px;">
+      Click on any district to switch the weather view. Colours show current temperature.
+    </p>
+    <div id="dublinMap" style="display:flex; justify-content:center; padding:10px 0;">
+      <svg viewBox="0 0 500 400" width="100%" style="max-width:500px;" id="mapSvg">
+        <!-- Dublin outline (simplified) -->
+        <rect x="0" y="0" width="500" height="400" fill="#f8faf8" rx="8"/>
+        <!-- Water — Dublin Bay -->
+        <path d="M350,50 Q500,100 480,250 L500,250 L500,0 L350,0 Z" fill="#e0f2fe" opacity="0.5"/>
+        <!-- District areas (approximate positions based on real geography) -->
+        <g id="mapAreas" style="cursor:pointer;">
+          <rect data-area="D1"  x="200" y="120" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="240" y="155" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D1</text>
+          <rect data-area="D3"  x="300" y="100" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="340" y="135" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D3</text>
+          <rect data-area="D5"  x="360" y="50"  width="80" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="400" y="80"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D5</text>
+          <rect data-area="D7"  x="140" y="100" width="60" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="170" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D7</text>
+          <rect data-area="D9"  x="200" y="50"  width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="240" y="85"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D9</text>
+          <rect data-area="D11" x="120" y="30"  width="70" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="155" y="62"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D11</text>
+          <rect data-area="D13" x="330" y="10"  width="80" height="45" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="370" y="37"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D13</text>
+          <rect data-area="D15" x="30"  y="60"  width="90" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="75"  y="92"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D15</text>
+          <rect data-area="D17" x="310" y="170" width="70" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="345" y="200" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D17</text>
+        </g>
+        <!-- Legend -->
+        <text x="20" y="370" font-size="11" fill="#6b7280">Dublin Bay →</text>
+        <text x="20" y="385" font-size="10" fill="#9ca3af">Click a district to view weather</text>
+      </svg>
+    </div>
+  </div>
+
   <div class="card" id="correlationCard" style="display:none;">
     <div class="card-title">Weather &rarr; Delay Impact <span class="tag">Pearson correlation</span></div>
     <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
@@ -1595,6 +1634,40 @@ async function runTests() {
   btn.disabled = false;
   btn.textContent = 'Run All Tests';
 }
+
+// Map click handler
+document.getElementById('mapAreas').addEventListener('click', function(e) {
+  const rect = e.target.closest('[data-area]');
+  if (rect) {
+    const area = rect.getAttribute('data-area');
+    setArea(area);
+    updateMapHighlight(area);
+  }
+});
+
+function updateMapHighlight(active) {
+  document.querySelectorAll('#mapAreas rect').forEach(r => {
+    const area = r.getAttribute('data-area');
+    if (area === active) {
+      r.setAttribute('fill', '#16a34a');
+      r.setAttribute('stroke', '#166534');
+      r.nextElementSibling.setAttribute('fill', 'white');
+    } else {
+      r.setAttribute('fill', '#dcfce7');
+      r.setAttribute('stroke', '#16a34a');
+      r.nextElementSibling.setAttribute('fill', '#166534');
+    }
+  });
+}
+
+// Also update map when area buttons are clicked
+const origSetArea = setArea;
+setArea = function(code) {
+  origSetArea(code);
+  updateMapHighlight(code);
+};
+
+updateMapHighlight('D1');
 
 loadAreas();
 refreshLive();
