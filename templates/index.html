@@ -588,6 +588,53 @@ textarea:focus { outline: none; border-color: #16a34a; }
   </div>
 
   <div class="card">
+    <div class="card-title">How Each Step Works <span class="tag">code walkthrough</span></div>
+
+    <h4 style="font-size:13px; color:#166534; margin-bottom:6px;">Step 1 — Data Acquisition</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Pulls data from 3 free public APIs with no keys needed. Open-Meteo gives us hourly weather
+      for Dublin from 2022 to now. CSO PxStat gives monthly bus and Luas passenger numbers.
+      Irish Rail gives live train positions.
+    </p>
+    <div class="code-block">resp = requests.get('https://archive-api.open-meteo.com/v1/archive',
+    params={'latitude': 53.35, 'longitude': -6.26,
+            'hourly': 'temperature_2m,rain,wind_speed_10m,...'})
+weather_df = pd.DataFrame(resp.json()['hourly'])</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 2 — Feature Extraction</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Creates new columns from the raw data. Temporal features like is_weekend, is_rush_hour.
+      Weather features like rain_category, weather_severity (composite 0-10 index).
+      Then rolls up hourly data into daily and monthly aggregates.
+    </p>
+    <div class="code-block">def compute_weather_severity(temp_c, rain_mm, wind_kmh):
+    cold = max(0, (10 - temp_c) / 20)  # 25% weight
+    rain = min(rain_mm / 30.0, 1.0)     # 50% weight
+    wind = min(wind_kmh / 60.0, 1.0)    # 25% weight
+    return round(cold*2.5 + rain*5.0 + wind*2.5, 2)</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 3 — Transformations &amp; Merging</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Merges monthly weather with monthly transport on (year, month). Drops COVID years 2020-2021
+      so the correlation is not dominated by lockdowns. Creates interaction features like bus_share
+      and weather_impact_score.
+    </p>
+    <div class="code-block">merged = bus_feat.merge(luas_feat, on=['year','month'])
+               .merge(weather_monthly, on=['year','month'])
+merged = extract_merged_features(merged)  # interaction features</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 4 — Database Loading</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Saves everything into 8 SQLite tables. Each table has its own schema — from raw hourly
+      weather to the final merged correlation table. Uses pandas to_sql with if_exists='replace'.
+    </p>
+    <div class="code-block">df.to_sql('weather_hourly', conn, if_exists='replace', index=False)
+# 8 tables: weather_hourly, weather_daily, weather_monthly,
+#           bus_passengers, luas_passengers, weather_transport_merged,
+#           rail_realtime, luas_realtime</div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Execution Log</div>
     <div class="log-panel" id="logPanel">
       <div class="log-entry"><span class="time">&mdash;</span><span class="msg">No runs yet</span></div>
