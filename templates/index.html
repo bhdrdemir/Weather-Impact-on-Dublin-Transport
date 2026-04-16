@@ -379,6 +379,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
       <span class="dot" id="liveDot"></span>
       <span>Last updated: <span id="lastUpdated">&mdash;</span></span>
       <button class="btn sm secondary" onclick="refreshLive()">Refresh</button>
+      <span id="countdown" style="font-size:11px; color:#bbf7d0; font-family:'Menlo','Consolas',monospace;">60s</span>
     </div>
   </div>
 </header>
@@ -1561,13 +1562,25 @@ async function runTests() {
 loadAreas();
 refreshLive();
 liveInterval = setInterval(refreshLive, 60000);
-// Update the "last updated" time every second for the live clock feel
+
+// Countdown timer for next auto-refresh
+let countdownSec = 60;
 setInterval(() => {
+  countdownSec--;
+  if (countdownSec <= 0) countdownSec = 60;
+  const el = document.getElementById('countdown');
+  if (el) el.textContent = countdownSec + 's';
+  // Also update live clock
   const nowEl = document.getElementById('w-now');
   if (nowEl && nowEl.textContent !== '—') {
     nowEl.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   }
 }, 1000);
+
+// Reset countdown on manual refresh
+const origRefresh = refreshLive;
+refreshLive = async function() { countdownSec = 60; return origRefresh(); };
+
 loadHistorical();
 </script>
 </body>
