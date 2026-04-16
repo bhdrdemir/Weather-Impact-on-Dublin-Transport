@@ -678,6 +678,28 @@ textarea:focus { outline: none; border-color: #16a34a; }
 
 <div class="tab" id="database">
   <div class="card">
+    <div class="card-title">Live Data Snapshot <span class="tag">realtime APIs</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
+      Current data from live API feeds. This reflects what the system is seeing right now,
+      not the historical training data used for correlation analysis.
+    </p>
+    <div class="grid-2">
+      <div>
+        <h4 style="font-size:13px; color:#166534; margin-bottom:8px;">Current Weather</h4>
+        <div class="table-wrap" id="dbWeatherLive">
+          <div class="empty-state">Loading live weather...</div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:13px; color:#166534; margin-bottom:8px;">Active Trains (Irish Rail)</h4>
+        <div class="table-wrap" id="dbRailLive" style="max-height:250px;">
+          <div class="empty-state">Loading trains...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Database Tables <span class="tag">sqlite</span></div>
     <div id="tableList" class="table-list">
       <div class="empty-state">Loading tables...</div>
@@ -686,7 +708,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
 
   <div class="card">
     <div class="card-title">SQL Query</div>
-    <textarea id="sqlInput">SELECT * FROM weather_hourly LIMIT 10</textarea>
+    <textarea id="sqlInput">SELECT * FROM weather_hourly ORDER BY timestamp DESC LIMIT 10</textarea>
     <div style="margin-top:10px;">
       <button class="btn" onclick="runQuery()">Run Query</button>
       <span id="queryStatus" style="margin-left:12px; color:#6b7280; font-size:13px;"></span>
@@ -942,7 +964,7 @@ function switchTab(id, btn) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'database') loadTables();
+  if (id === 'database') { loadTables(); loadDbLive(); }
   if (id === 'features') loadFeatures();
   if (id === 'dashboard') loadHistorical();
   if (id === 'tests') loadTestList();
@@ -1506,6 +1528,44 @@ function formatCell(v) {
   }
   if (typeof v === 'boolean') return v ? '✓' : '—';
   return escapeHtml(String(v));
+}
+
+async function loadDbLive() {
+  try {
+    const r = await fetch('/api/live?area=' + encodeURIComponent(selectedArea));
+    const d = await r.json();
+    // Weather live snapshot
+    const wEl = document.getElementById('dbWeatherLive');
+    const w = d.weather || {};
+    if (w.temp != null) {
+      wEl.innerHTML = `<table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Temperature</td><td>${w.temp}°C</td></tr>
+          <tr><td>Humidity</td><td>${w.humidity}%</td></tr>
+          <tr><td>Rain</td><td>${(w.rain||0).toFixed(1)} mm</td></tr>
+          <tr><td>Wind Speed</td><td>${(w.wind_speed||0).toFixed(1)} km/h</td></tr>
+          <tr><td>Pressure</td><td>${Math.round(w.pressure||0)} hPa</td></tr>
+          <tr><td>Condition</td><td>${escapeHtml(w.description)}</td></tr>
+          <tr><td>Severity</td><td>${(w.severity||0).toFixed(1)}/10</td></tr>
+          <tr><td>Area</td><td>${escapeHtml(d.area?.name || selectedArea)}</td></tr>
+        </tbody></table>`;
+    }
+    // Rail live snapshot
+    const rEl = document.getElementById('dbRailLive');
+    const rail = d.rail || [];
+    if (rail.length > 0) {
+      rEl.innerHTML = `<table>
+        <thead><tr><th>Code</th><th>Direction</th><th>Status</th></tr></thead>
+        <tbody>${rail.slice(0,15).map(t => `<tr>
+          <td><strong>${escapeHtml(t.code)}</strong></td>
+          <td>${escapeHtml(t.direction)}</td>
+          <td>${t.status === 'R' ? 'Running' : t.status === 'N' ? 'Not started' : t.status || ''}</td>
+        </tr>`).join('')}</tbody></table>`;
+    } else {
+      rEl.innerHTML = '<div class="empty-state">No active trains</div>';
+    }
+  } catch(e) { console.error('DB live load failed:', e); }
 }
 
 async function loadTables() {
