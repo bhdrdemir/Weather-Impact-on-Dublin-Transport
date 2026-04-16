@@ -285,14 +285,14 @@ def api_rail_rt():
 # Dublin postal areas with coordinates (centroid of each area)
 DUBLIN_AREAS = {
     'D1':  {'name': 'Dublin 1 — City North', 'lat': 53.3547, 'lon': -6.2555},
-    'D2':  {'name': 'Dublin 2 — City South', 'lat': 53.3382, 'lon': -6.2522},
-    'D4':  {'name': 'Dublin 4 — Ballsbridge', 'lat': 53.3266, 'lon': -6.2317},
-    'D6':  {'name': 'Dublin 6 — Rathmines', 'lat': 53.3219, 'lon': -6.2645},
+    'D3':  {'name': 'Dublin 3 — Clontarf', 'lat': 53.3649, 'lon': -6.2100},
+    'D5':  {'name': 'Dublin 5 — Raheny', 'lat': 53.3811, 'lon': -6.1781},
     'D7':  {'name': 'Dublin 7 — Phibsborough', 'lat': 53.3575, 'lon': -6.2729},
-    'D8':  {'name': 'Dublin 8 — Kilmainham', 'lat': 53.3379, 'lon': -6.2957},
     'D9':  {'name': 'Dublin 9 — Drumcondra', 'lat': 53.3760, 'lon': -6.2552},
-    'D14': {'name': 'Dublin 14 — Dundrum', 'lat': 53.2920, 'lon': -6.2419},
+    'D11': {'name': 'Dublin 11 — Finglas', 'lat': 53.3900, 'lon': -6.2980},
+    'D13': {'name': 'Dublin 13 — Donaghmede', 'lat': 53.3940, 'lon': -6.1510},
     'D15': {'name': 'Dublin 15 — Blanchardstown', 'lat': 53.3872, 'lon': -6.3782},
+    'D17': {'name': 'Dublin 17 — Coolock', 'lat': 53.3870, 'lon': -6.2010},
 }
 
 
