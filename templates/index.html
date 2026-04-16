@@ -9,51 +9,52 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: #0f172a; color: #e2e8f0; line-height: 1.5;
+  background: #f8faf8; color: #1e293b; line-height: 1.5;
 }
 .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
 header {
-  background: #1e293b; border-bottom: 1px solid #334155;
+  background: #166534; border-bottom: 1px solid #15803d;
   padding: 20px 0; margin-bottom: 28px;
 }
 .header-inner {
   max-width: 1400px; margin: 0 auto; padding: 0 24px;
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
 }
-h1 { font-size: 22px; color: #60a5fa; font-weight: 600; }
-.subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
-.status-bar { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #94a3b8; }
+h1 { font-size: 22px; color: #ffffff; font-weight: 600; }
+.subtitle { font-size: 13px; color: #bbf7d0; margin-top: 4px; }
+.status-bar { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #dcfce7; }
 .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 .status-bar .dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: 0.4; } }
 
 nav {
-  display: flex; gap: 4px; border-bottom: 1px solid #334155;
+  display: flex; gap: 4px; border-bottom: 1px solid #d1d5db;
   margin-bottom: 24px; overflow-x: auto;
 }
 nav button {
-  background: none; border: none; color: #94a3b8;
+  background: none; border: none; color: #6b7280;
   padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
   border-bottom: 2px solid transparent; transition: all 0.15s;
   white-space: nowrap;
 }
-nav button:hover { color: #e2e8f0; }
-nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
+nav button:hover { color: #1e293b; }
+nav button.active { color: #166534; border-bottom-color: #16a34a; }
 
 .tab { display: none; }
 .tab.active { display: block; }
 
 .card {
-  background: #1e293b; border: 1px solid #334155;
+  background: #ffffff; border: 1px solid #d1d5db;
   border-radius: 8px; padding: 20px; margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 .card-title {
-  font-size: 15px; font-weight: 600; color: #e2e8f0;
+  font-size: 15px; font-weight: 600; color: #1e293b;
   margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
 }
 .card-title .tag {
-  background: #334155; color: #94a3b8; font-size: 11px;
+  background: #dcfce7; color: #166534; font-size: 11px;
   padding: 3px 8px; border-radius: 10px; font-weight: 500;
 }
 
@@ -72,20 +73,20 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
   display: flex; align-items: center; gap: 28px;
   padding: 8px 0;
 }
-.weather-temp { font-size: 64px; font-weight: 200; color: #60a5fa; line-height: 1; }
+.weather-temp { font-size: 64px; font-weight: 200; color: #16a34a; line-height: 1; }
 .weather-info { flex: 1; }
 .weather-info .desc { font-size: 20px; margin-bottom: 4px; }
-.weather-info .loc { font-size: 13px; color: #94a3b8; }
+.weather-info .loc { font-size: 13px; color: #6b7280; }
 .weather-metrics {
   display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #334155;
+  gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;
 }
 .metric { text-align: center; }
-.metric-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
 .metric-value { font-size: 18px; font-weight: 600; margin-top: 4px; }
 
 .severity-bar {
-  height: 6px; background: #334155; border-radius: 3px;
+  height: 6px; background: #e5e7eb; border-radius: 3px;
   margin-top: 16px; overflow: hidden;
 }
 .severity-fill {
@@ -95,15 +96,15 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
 }
 .severity-label {
   display: flex; justify-content: space-between;
-  font-size: 12px; color: #94a3b8; margin-top: 6px;
+  font-size: 12px; color: #6b7280; margin-top: 6px;
 }
 
 .transport-stat { text-align: center; padding: 16px 0; }
 .transport-stat .num {
-  font-size: 36px; font-weight: 600; color: #60a5fa; line-height: 1;
+  font-size: 36px; font-weight: 600; color: #16a34a; line-height: 1;
 }
 .transport-stat .label {
-  font-size: 12px; color: #94a3b8; text-transform: uppercase;
+  font-size: 12px; color: #6b7280; text-transform: uppercase;
   letter-spacing: 0.5px; margin-top: 6px;
 }
 
@@ -112,15 +113,15 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
 .luas-stop {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 10px 12px;
 }
-.luas-stop-name { font-weight: 600; font-size: 13px; color: #e2e8f0; margin-bottom: 4px; }
-.luas-tram { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; }
-.luas-tram .due { color: #60a5fa; font-weight: 600; }
+.luas-stop-name { font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 4px; }
+.luas-tram { font-size: 12px; color: #6b7280; display: flex; justify-content: space-between; }
+.luas-tram .due { color: #16a34a; font-weight: 600; }
 
 .empty-state {
-  padding: 24px; text-align: center; color: #64748b;
+  padding: 24px; text-align: center; color: #9ca3af;
   font-size: 13px; font-style: italic;
 }
 
@@ -132,23 +133,23 @@ table {
 }
 th, td {
   padding: 8px 10px; text-align: left;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid #e5e7eb;
 }
-th { background: #0f172a; color: #94a3b8; font-weight: 600; font-size: 11px;
+th { background: #f0fdf4; color: #374151; font-weight: 600; font-size: 11px;
      text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
-tbody tr:hover { background: #0f172a; }
-.table-wrap { max-height: 400px; overflow: auto; border-radius: 6px; border: 1px solid #334155; }
+tbody tr:hover { background: #f0fdf4; }
+.table-wrap { max-height: 400px; overflow: auto; border-radius: 6px; border: 1px solid #d1d5db; }
 
 button.btn {
-  background: #3b82f6; color: white; border: none;
+  background: #16a34a; color: white; border: none;
   padding: 9px 18px; border-radius: 6px;
   font-size: 14px; font-weight: 500; cursor: pointer;
   transition: background 0.15s;
 }
-button.btn:hover { background: #2563eb; }
-button.btn:disabled { background: #475569; cursor: not-allowed; }
-button.btn.secondary { background: #334155; }
-button.btn.secondary:hover { background: #475569; }
+button.btn:hover { background: #15803d; }
+button.btn:disabled { background: #9ca3af; cursor: not-allowed; }
+button.btn.secondary { background: #e5e7eb; color: #374151; }
+button.btn.secondary:hover { background: #d1d5db; }
 button.btn.sm { padding: 6px 12px; font-size: 13px; }
 
 .pipeline-steps {
@@ -157,90 +158,90 @@ button.btn.sm { padding: 6px 12px; font-size: 13px; }
 }
 @media (max-width: 900px) { .pipeline-steps { grid-template-columns: 1fr 1fr; } }
 .step-card {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 14px; text-align: center;
 }
 .step-icon {
   width: 32px; height: 32px; border-radius: 50%;
-  background: #334155; display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 8px; font-size: 16px; font-weight: 600;
+  background: #e5e7eb; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px; font-size: 16px; font-weight: 600; color: #374151;
 }
-.step-card.running .step-icon { background: #3b82f6; animation: pulse 1.2s infinite; }
-.step-card.complete .step-icon { background: #22c55e; }
-.step-card.failed .step-icon { background: #ef4444; }
+.step-card.running .step-icon { background: #16a34a; color: white; animation: pulse 1.2s infinite; }
+.step-card.complete .step-icon { background: #22c55e; color: white; }
+.step-card.failed .step-icon { background: #ef4444; color: white; }
 .step-name { font-size: 13px; font-weight: 600; }
-.step-detail { font-size: 11px; color: #94a3b8; margin-top: 4px; min-height: 28px; }
+.step-detail { font-size: 11px; color: #6b7280; margin-top: 4px; min-height: 28px; }
 
 .log-panel {
-  background: #0f172a; border: 1px solid #334155; border-radius: 6px;
+  background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px;
   padding: 14px; font-family: 'Menlo', 'Consolas', monospace;
   font-size: 12px; height: 280px; overflow-y: auto;
 }
 .log-entry { margin-bottom: 4px; display: flex; gap: 10px; }
-.log-entry .time { color: #64748b; flex-shrink: 0; }
-.log-entry .msg { color: #e2e8f0; }
-.log-entry.running .msg { color: #60a5fa; }
-.log-entry.complete .msg { color: #22c55e; }
+.log-entry .time { color: #9ca3af; flex-shrink: 0; }
+.log-entry .msg { color: #1e293b; }
+.log-entry.running .msg { color: #16a34a; }
+.log-entry.complete .msg { color: #15803d; }
 .log-entry.failed .msg { color: #ef4444; }
 
 textarea {
-  width: 100%; background: #0f172a; color: #e2e8f0;
-  border: 1px solid #334155; border-radius: 6px;
+  width: 100%; background: #f9fafb; color: #1e293b;
+  border: 1px solid #d1d5db; border-radius: 6px;
   padding: 12px; font-family: 'Menlo', 'Consolas', monospace;
   font-size: 13px; resize: vertical; min-height: 80px;
 }
-textarea:focus { outline: none; border-color: #3b82f6; }
+textarea:focus { outline: none; border-color: #16a34a; }
 
 .table-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .table-item {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 10px 14px; cursor: pointer;
   transition: all 0.15s;
 }
-.table-item:hover { border-color: #60a5fa; background: #1e293b; }
-.table-item .tname { font-weight: 600; font-size: 13px; color: #60a5fa; }
-.table-item .trows { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.table-item:hover { border-color: #16a34a; background: #dcfce7; }
+.table-item .tname { font-weight: 600; font-size: 13px; color: #166534; }
+.table-item .trows { font-size: 11px; color: #6b7280; margin-top: 2px; }
 
 .test-badge {
   display: inline-block; padding: 4px 12px;
   border-radius: 12px; font-size: 13px; font-weight: 600;
   margin-left: 12px;
 }
-.test-badge.pass { background: #14532d; color: #86efac; }
-.test-badge.fail { background: #7f1d1d; color: #fca5a5; }
+.test-badge.pass { background: #dcfce7; color: #166534; }
+.test-badge.fail { background: #fee2e2; color: #991b1b; }
 
 .doc-section { margin-bottom: 28px; }
 .doc-section h2 {
-  font-size: 17px; color: #60a5fa; margin-bottom: 10px;
-  padding-bottom: 6px; border-bottom: 1px solid #334155;
+  font-size: 17px; color: #166534; margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid #d1d5db;
 }
-.doc-section h3 { font-size: 14px; color: #e2e8f0; margin: 14px 0 8px; }
-.doc-section p, .doc-section li { font-size: 14px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.7; }
+.doc-section h3 { font-size: 14px; color: #1e293b; margin: 14px 0 8px; }
+.doc-section p, .doc-section li { font-size: 14px; color: #374151; margin-bottom: 8px; line-height: 1.7; }
 .doc-section ul { padding-left: 22px; }
 .code-block {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f9fafb; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 14px;
   font-family: 'Menlo', 'Consolas', monospace;
-  font-size: 12px; color: #cbd5e1;
+  font-size: 12px; color: #374151;
   overflow-x: auto; margin: 10px 0;
   white-space: pre; line-height: 1.6;
 }
 .feature-chip {
-  display: inline-block; background: #0f172a;
-  color: #60a5fa; border: 1px solid #334155;
+  display: inline-block; background: #f0fdf4;
+  color: #166534; border: 1px solid #bbf7d0;
   padding: 3px 10px; border-radius: 12px;
   font-size: 12px; margin: 2px 4px 2px 0;
   font-family: 'Menlo', 'Consolas', monospace;
 }
 
 .error-box {
-  background: #450a0a; border: 1px solid #7f1d1d;
-  color: #fca5a5; padding: 12px; border-radius: 6px;
+  background: #fef2f2; border: 1px solid #fecaca;
+  color: #991b1b; padding: 12px; border-radius: 6px;
   font-size: 13px; margin: 10px 0;
 }
 .info-box {
-  background: #0c4a6e; border: 1px solid #0369a1;
-  color: #7dd3fc; padding: 12px; border-radius: 6px;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  color: #166534; padding: 12px; border-radius: 6px;
   font-size: 13px; margin: 10px 0;
 }
 
@@ -249,16 +250,16 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
 }
 .area-btn {
-  background: #0f172a; color: #94a3b8; border: 1px solid #334155;
+  background: #f9fafb; color: #6b7280; border: 1px solid #d1d5db;
   padding: 6px 12px; border-radius: 14px; cursor: pointer;
   font-size: 12px; font-weight: 500; transition: all 0.15s;
 }
-.area-btn:hover { border-color: #60a5fa; color: #e2e8f0; }
-.area-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+.area-btn:hover { border-color: #16a34a; color: #1e293b; }
+.area-btn.active { background: #16a34a; color: white; border-color: #16a34a; }
 
 /* Current time chip */
 .time-chip {
-  background: #0f172a; color: #94a3b8; font-size: 12px;
+  background: #f0fdf4; color: #166534; font-size: 12px;
   padding: 4px 10px; border-radius: 10px; margin-left: auto;
   font-family: 'Menlo', 'Consolas', monospace;
 }
@@ -266,41 +267,41 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 /* Hourly forecast strip */
 .forecast-strip {
   display: flex; gap: 6px; margin-top: 14px; padding-top: 14px;
-  border-top: 1px solid #334155; overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: thin; scrollbar-color: #334155 transparent;
+  border-top: 1px solid #e5e7eb; overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: thin; scrollbar-color: #d1d5db transparent;
   max-width: 100%;
 }
 .forecast-strip::-webkit-scrollbar { height: 6px; }
-.forecast-strip::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+.forecast-strip::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 .hour-cell {
-  background: #0f172a; border: 1px solid #334155; border-radius: 6px;
+  background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px;
   padding: 8px 10px; text-align: center; min-width: 64px; flex-shrink: 0;
 }
-.hour-cell .h-time { font-size: 11px; color: #94a3b8; }
-.hour-cell .h-temp { font-size: 15px; font-weight: 600; margin: 2px 0; color: #e2e8f0; }
-.hour-cell .h-rain { font-size: 10px; color: #60a5fa; }
-.hour-cell.rainy { border-color: #60a5fa; background: #0c2340; }
+.hour-cell .h-time { font-size: 11px; color: #6b7280; }
+.hour-cell .h-temp { font-size: 15px; font-weight: 600; margin: 2px 0; color: #1e293b; }
+.hour-cell .h-rain { font-size: 10px; color: #16a34a; }
+.hour-cell.rainy { border-color: #16a34a; background: #f0fdf4; }
 
 /* Transport vehicle row */
 .vehicle-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 13px;
+  padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: 13px;
 }
 .vehicle-row:last-child { border-bottom: none; }
 .vehicle-id {
-  background: #3b82f6; color: white; font-weight: 700;
+  background: #16a34a; color: white; font-weight: 700;
   padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px;
   font-family: 'Menlo', 'Consolas', monospace;
 }
-.vehicle-dir { color: #94a3b8; font-size: 11px; }
+.vehicle-dir { color: #6b7280; font-size: 11px; }
 .vehicle-info { flex: 1; }
-.vehicle-eta { color: #60a5fa; font-weight: 600; font-size: 13px; }
+.vehicle-eta { color: #166534; font-weight: 600; font-size: 13px; }
 
 .mode-section {
   margin-bottom: 16px;
 }
 .mode-section h4 {
-  font-size: 13px; color: #94a3b8; text-transform: uppercase;
+  font-size: 13px; color: #6b7280; text-transform: uppercase;
   letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600;
 }
 
@@ -328,42 +329,42 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   display: flex; gap: 3px; margin-top: 6px;
 }
 .delay-bar {
-  width: 32px; height: 6px; border-radius: 2px; background: #334155;
+  width: 32px; height: 6px; border-radius: 2px; background: #e5e7eb;
 }
 .delay-bar.filled { background: currentColor; }
 
 /* Test list */
 .test-class-card {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f9fafb; border: 1px solid #d1d5db;
   border-radius: 6px; margin-bottom: 10px; overflow: hidden;
 }
 .test-class-header {
-  padding: 10px 14px; background: #1e293b;
-  font-weight: 600; font-size: 13px; color: #60a5fa;
+  padding: 10px 14px; background: #f0fdf4;
+  font-weight: 600; font-size: 13px; color: #166534;
   display: flex; justify-content: space-between; align-items: center;
 }
 .test-class-header .count {
-  background: #334155; color: #94a3b8; font-size: 11px;
+  background: #dcfce7; color: #166534; font-size: 11px;
   padding: 2px 8px; border-radius: 10px; font-weight: 500;
 }
 .test-list-inner { padding: 10px 14px; }
 .test-row {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 6px 0; font-size: 12px; border-bottom: 1px solid #1e293b;
+  padding: 6px 0; font-size: 12px; border-bottom: 1px solid #e5e7eb;
 }
 .test-row:last-child { border-bottom: none; }
 .test-row .icon {
   width: 18px; height: 18px; border-radius: 50%;
-  background: #334155; color: #94a3b8;
+  background: #e5e7eb; color: #6b7280;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; font-size: 11px;
 }
-.test-row .icon.pass { background: #14532d; color: #86efac; }
-.test-row .icon.fail { background: #7f1d1d; color: #fca5a5; }
+.test-row .icon.pass { background: #dcfce7; color: #166534; }
+.test-row .icon.fail { background: #fee2e2; color: #991b1b; }
 .test-row .method {
-  font-family: 'Menlo', 'Consolas', monospace; color: #cbd5e1;
+  font-family: 'Menlo', 'Consolas', monospace; color: #374151;
 }
-.test-row .desc { color: #94a3b8; margin-left: 6px; }
+.test-row .desc { color: #6b7280; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -403,7 +404,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         <span class="time-chip" id="w-now">&mdash;</span>
       </div>
       <div class="area-buttons" id="areaButtons">
-        <div style="color:#64748b;font-size:12px;">Loading areas...</div>
+        <div style="color:#9ca3af;font-size:12px;">Loading areas...</div>
       </div>
       <div class="weather-hero">
         <div class="weather-temp" id="w-temp">&mdash;</div>
@@ -424,7 +425,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         <span id="w-severity-text">&mdash;</span>
       </div>
       <div class="forecast-strip" id="forecastStrip">
-        <div style="color:#64748b;font-size:12px;">Loading 24-hour forecast...</div>
+        <div style="color:#9ca3af;font-size:12px;">Loading 24-hour forecast...</div>
       </div>
     </div>
 
@@ -464,7 +465,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="correlationCard" style="display:none;">
     <div class="card-title">Weather &rarr; Delay Impact <span class="tag">Pearson correlation</span></div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       The delay proxy is the percentage shortfall of monthly ridership below the seasonal baseline &mdash;
       dips below the norm are a plausible signal of weather-driven disruption. A <strong>positive</strong> bar
       means that weather factor tends to increase delays. The longer the bar, the stronger the effect.
@@ -475,7 +476,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
     <div id="delayExamples" style="margin-top:18px;"></div>
 
     <details style="margin-top:14px;">
-      <summary style="cursor:pointer; color:#60a5fa; font-size:13px;">Show detailed correlation table</summary>
+      <summary style="cursor:pointer; color:#16a34a; font-size:13px;">Show detailed correlation table</summary>
       <div class="table-wrap" style="margin-top:10px;">
         <table>
           <thead><tr>
@@ -502,7 +503,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 <div class="tab" id="pipeline">
   <div class="card">
     <div class="card-title">Run Full Pipeline <span class="tag">~5-10 seconds</span></div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       Fetches data from 3 public APIs (Open-Meteo, CSO PxStat, Irish Rail), runs feature extraction,
       merges weather + transport, and loads into SQLite.
     </p>
@@ -546,7 +547,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 <div class="tab" id="features">
   <div class="card">
     <div class="card-title">Feature Extraction Showcase <span class="tag">live from DB</span></div>
-    <p style="color:#94a3b8; font-size:13px;">
+    <p style="color:#6b7280; font-size:13px;">
       This tab displays sample rows from every pipeline output table. Each feature column represents
       a derived value &mdash; temporal, weather-based, transport-normalised, or interaction term.
     </p>
@@ -557,7 +558,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featSection" style="display:none;">
     <div class="card-title">Temporal + Weather Features <span class="tag">extract_temporal_features + extract_weather_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Extracted from hourly records:
       <span class="feature-chip">season</span>
       <span class="feature-chip">is_weekend</span>
@@ -572,7 +573,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featDailySection" style="display:none;">
     <div class="card-title">Daily Aggregates <span class="tag">extract_daily_aggregates</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Rolled up from hourly:
       <span class="feature-chip">rain_hours</span>
       <span class="feature-chip">max_severity</span>
@@ -583,7 +584,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featMonthlySection" style="display:none;">
     <div class="card-title">Monthly Aggregates <span class="tag">extract_monthly_aggregates</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Rolled up from daily:
       <span class="feature-chip">rainy_days</span>
       <span class="feature-chip">severe_days</span>
@@ -594,7 +595,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featBusSection" style="display:none;">
     <div class="card-title">Transport Features &mdash; Dublin Bus <span class="tag">extract_transport_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Extracted from CSO passenger data:
       <span class="feature-chip">passengers_norm</span>
       <span class="feature-chip">yoy_change</span>
@@ -611,7 +612,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featMergedSection" style="display:none;">
     <div class="card-title">Interaction Features &mdash; Merged Weather + Transport <span class="tag">extract_merged_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Cross-domain features:
       <span class="feature-chip">total_passengers</span>
       <span class="feature-chip">bus_share</span>
@@ -637,7 +638,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
     <textarea id="sqlInput">SELECT * FROM weather_hourly LIMIT 10</textarea>
     <div style="margin-top:10px;">
       <button class="btn" onclick="runQuery()">Run Query</button>
-      <span id="queryStatus" style="margin-left:12px; color:#94a3b8; font-size:13px;"></span>
+      <span id="queryStatus" style="margin-left:12px; color:#6b7280; font-size:13px;"></span>
     </div>
   </div>
 
@@ -655,7 +656,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
       Test Suite <span class="tag" id="testTotalTag">45 tests in 12 classes</span>
       <span id="testBadge"></span>
     </div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       Click a test to see its description. Run the suite to execute all tests and see pass/fail status.
     </p>
     <button class="btn" id="btnRunTests" onclick="runTests()">Run All Tests</button>
@@ -870,11 +871,11 @@ the author. Code was reviewed and adapted for correctness; AI output was not acc
 <h2>10. Attributions &amp; Licences</h2>
 <ul>
   <li><strong>Open-Meteo</strong> &mdash; CC BY 4.0
-    (<a href="https://open-meteo.com" target="_blank" style="color:#60a5fa;">open-meteo.com</a>)</li>
+    (<a href="https://open-meteo.com" target="_blank" style="color:#16a34a;">open-meteo.com</a>)</li>
   <li><strong>CSO PxStat</strong> &mdash; Ireland open data
-    (<a href="https://data.cso.ie" target="_blank" style="color:#60a5fa;">data.cso.ie</a>)</li>
+    (<a href="https://data.cso.ie" target="_blank" style="color:#16a34a;">data.cso.ie</a>)</li>
   <li><strong>Irish Rail Realtime API</strong> &mdash;
-    <a href="http://api.irishrail.ie/realtime/" target="_blank" style="color:#60a5fa;">api.irishrail.ie</a></li>
+    <a href="http://api.irishrail.ie/realtime/" target="_blank" style="color:#16a34a;">api.irishrail.ie</a></li>
   <li><strong>Luas Forecasting API</strong> &mdash; Transport Infrastructure Ireland</li>
 </ul>
 <p>Libraries: Flask, pandas, numpy, scipy, requests, Chart.js 4.4.1.</p>
@@ -964,7 +965,7 @@ function updateWeather(w, area) {
 function updateForecast(hours) {
   const strip = document.getElementById('forecastStrip');
   if (!hours || hours.length === 0) {
-    strip.innerHTML = '<div style="color:#64748b;font-size:12px;">Forecast unavailable</div>';
+    strip.innerHTML = '<div style="color:#9ca3af;font-size:12px;">Forecast unavailable</div>';
     return;
   }
   strip.innerHTML = hours.map(h => {
@@ -999,7 +1000,7 @@ function updateTransport(d) {
     });
     luasList.innerHTML = Object.entries(byStop).map(([stop, trams]) => `
       <div style="margin-bottom:10px;">
-        <div style="font-weight:600; font-size:12px; color:#60a5fa; margin-bottom:4px; padding:4px 0; border-bottom:1px solid #334155;">
+        <div style="font-weight:600; font-size:12px; color:#166534; margin-bottom:4px; padding:4px 0; border-bottom:1px solid #e5e7eb;">
           ${escapeHtml(stop)}
         </div>
         ${trams.slice(0, 4).map(t => `
@@ -1031,12 +1032,12 @@ function updateTransport(d) {
     const shown = running.length > 0 ? running : rail.slice(0, 12);
     railList.innerHTML = shown.map(t => `
       <div class="vehicle-row">
-        <span class="vehicle-id" style="background:#16a34a;">${escapeHtml(t.code || '?')}</span>
+        <span class="vehicle-id" style="background:#166534;">${escapeHtml(t.code || '?')}</span>
         <div class="vehicle-info">
           <div>${escapeHtml(parseTrainMessage(t.message))}</div>
           <div class="vehicle-dir">${escapeHtml(t.direction || '')}</div>
         </div>
-        <span class="vehicle-eta" style="font-size:11px; color:${t.status === 'R' ? '#86efac' : '#94a3b8'};">${escapeHtml(statusLabel(t.status))}</span>
+        <span class="vehicle-eta" style="font-size:11px; color:${t.status === 'R' ? '#16a34a' : '#6b7280'};">${escapeHtml(statusLabel(t.status))}</span>
       </div>
     `).join('');
   }
@@ -1140,19 +1141,19 @@ function drawTimeline(bus, luas) {
     data: {
       labels,
       datasets: [
-        { label: 'Bus', data: (bus||[]).map(r => r.passengers), borderColor: '#60a5fa',
-          backgroundColor: 'rgba(96,165,250,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 },
-        { label: 'Luas', data: (luas||[]).map(r => r.passengers), borderColor: '#f472b6',
-          backgroundColor: 'rgba(244,114,182,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 }
+        { label: 'Bus', data: (bus||[]).map(r => r.passengers), borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 },
+        { label: 'Luas', data: (luas||[]).map(r => r.passengers), borderColor: '#166534',
+          backgroundColor: 'rgba(22,101,52,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { title: { display: true, text: 'Monthly Passenger Timeline', color: '#e2e8f0' },
-                 legend: { labels: { color: '#cbd5e1' } } },
+      plugins: { title: { display: true, text: 'Monthly Passenger Timeline', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
       scales: {
-        x: { ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        x: { ticks: { color: '#6b7280', maxTicksLimit: 10 }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } }
       }
     }
   });
@@ -1169,17 +1170,17 @@ function drawSeasonal(seasonal) {
     data: {
       labels: sorted.map(s => s.season),
       datasets: [
-        { label: 'Avg Bus', data: sorted.map(s => s.avg_bus), backgroundColor: '#60a5fa' },
-        { label: 'Avg Luas', data: sorted.map(s => s.avg_luas), backgroundColor: '#f472b6' }
+        { label: 'Avg Bus', data: sorted.map(s => s.avg_bus), backgroundColor: '#16a34a' },
+        { label: 'Avg Luas', data: sorted.map(s => s.avg_luas), backgroundColor: '#166534' }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { title: { display: true, text: 'Seasonal Average Passengers', color: '#e2e8f0' },
-                 legend: { labels: { color: '#cbd5e1' } } },
+      plugins: { title: { display: true, text: 'Seasonal Average Passengers', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
       scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } }
       }
     }
   });
@@ -1253,10 +1254,10 @@ function drawCorrelationChart(stats) {
     data: {
       labels: vars,
       datasets: [
-        { label: 'Bus delay', data: busVals, backgroundColor: '#60a5fa',
-          borderColor: '#3b82f6', borderWidth: 1 },
-        { label: 'Luas delay', data: luasVals, backgroundColor: '#f472b6',
-          borderColor: '#ec4899', borderWidth: 1 }
+        { label: 'Bus delay', data: busVals, backgroundColor: '#16a34a',
+          borderColor: '#15803d', borderWidth: 1 },
+        { label: 'Luas delay', data: luasVals, backgroundColor: '#166534',
+          borderColor: '#14532d', borderWidth: 1 }
       ]
     },
     options: {
@@ -1264,8 +1265,8 @@ function drawCorrelationChart(stats) {
       plugins: {
         title: { display: true,
                  text: 'Weather factor → % ridership shortfall (delay proxy)',
-                 color: '#e2e8f0' },
-        legend: { labels: { color: '#cbd5e1' } },
+                 color: '#1e293b' },
+        legend: { labels: { color: '#374151' } },
         tooltip: { callbacks: {
           afterLabel: (item) => {
             const v = item.parsed.y;
@@ -1280,9 +1281,9 @@ function drawCorrelationChart(stats) {
         } }
       },
       scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' },
-             title: { display: true, text: 'Pearson r (delay vs weather)', color: '#94a3b8' },
+        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Pearson r (delay vs weather)', color: '#6b7280' },
              min: -1, max: 1 }
       }
     }
