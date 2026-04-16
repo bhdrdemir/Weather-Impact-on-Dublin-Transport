@@ -1318,7 +1318,6 @@ function drawCorrelationChart(stats) {
 
   const bus = stats.bus || [];
   const luas = stats.luas || [];
-  // Align on same variable order (use bus as reference)
   const vars = bus.map(c => c.variable);
   const busVals = bus.map(c => c.pearson_r);
   const luasVals = vars.map(v => {
@@ -1326,41 +1325,46 @@ function drawCorrelationChart(stats) {
     return m ? m.pearson_r : 0;
   });
 
+  // Horizontal bar chart for better readability
   chartCorrelation = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: vars,
       datasets: [
-        { label: 'Bus delay', data: busVals, backgroundColor: '#16a34a',
-          borderColor: '#15803d', borderWidth: 1 },
-        { label: 'Luas delay', data: luasVals, backgroundColor: '#166534',
-          borderColor: '#14532d', borderWidth: 1 }
+        { label: 'Bus delay impact', data: busVals,
+          backgroundColor: busVals.map(v => v > 0 ? 'rgba(22,163,74,0.7)' : 'rgba(34,197,94,0.4)'),
+          borderColor: busVals.map(v => v > 0 ? '#16a34a' : '#22c55e'),
+          borderWidth: 2, borderRadius: 4 },
+        { label: 'Luas delay impact', data: luasVals,
+          backgroundColor: luasVals.map(v => v > 0 ? 'rgba(22,101,52,0.7)' : 'rgba(22,101,52,0.3)'),
+          borderColor: luasVals.map(v => v > 0 ? '#166534' : '#14532d'),
+          borderWidth: 2, borderRadius: 4 }
       ]
     },
     options: {
+      indexAxis: 'y',
       responsive: true, maintainAspectRatio: false,
       plugins: {
         title: { display: true,
-                 text: 'Weather factor → % ridership shortfall (delay proxy)',
-                 color: '#1e293b' },
-        legend: { labels: { color: '#374151' } },
+                 text: 'How Each Weather Factor Affects Transport Delays',
+                 color: '#1e293b', font: { size: 14 } },
+        legend: { labels: { color: '#374151', usePointStyle: true, pointStyle: 'rectRounded' } },
         tooltip: { callbacks: {
           afterLabel: (item) => {
-            const v = item.parsed.y;
-            const strength = Math.abs(v) < 0.2 ? 'weak' :
-                             Math.abs(v) < 0.4 ? 'moderate' :
-                             Math.abs(v) < 0.6 ? 'strong' : 'very strong';
-            const dir = v > 0 ? 'positive — higher value increases delay' :
-                        v < 0 ? 'negative — higher value reduces delay' :
-                        'no effect';
+            const v = item.parsed.x;
+            const strength = Math.abs(v) < 0.2 ? 'Weak effect' :
+                             Math.abs(v) < 0.4 ? 'Moderate effect' :
+                             Math.abs(v) < 0.6 ? 'Strong effect' : 'Very strong effect';
+            const dir = v > 0 ? '→ More delay when higher' :
+                        v < 0 ? '→ Less delay when higher' : '→ No effect';
             return `${strength} ${dir}`;
           }
         } }
       },
       scales: {
-        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
-        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
-             title: { display: true, text: 'Pearson r (delay vs weather)', color: '#6b7280' },
+        y: { ticks: { color: '#374151', font: { weight: '600' } }, grid: { display: false } },
+        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Correlation Strength (Pearson r)', color: '#6b7280' },
              min: -1, max: 1 }
       }
     }
