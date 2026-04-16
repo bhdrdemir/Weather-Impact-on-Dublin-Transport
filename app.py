@@ -509,6 +509,56 @@ def api_prediction():
         return jsonify({'error': str(e)}), 500
 
 
+# Bus stops by Dublin area — common routes & stops for each postal district
+DUBLIN_BUS_STOPS = {
+    'D1': [
+        {'stop': "O'Connell St", 'routes': ['1', '11', '13', '16', '38', '39', '46a']},
+        {'stop': 'Parnell Square', 'routes': ['3', '10', '11', '38a', '40']},
+        {'stop': 'Connolly Station', 'routes': ['1', '151', '53', '130']},
+    ],
+    'D3': [
+        {'stop': 'Clontarf Road', 'routes': ['130', '14', '15']},
+        {'stop': 'Fairview', 'routes': ['14', '27', '42', '43']},
+    ],
+    'D5': [
+        {'stop': 'Raheny Village', 'routes': ['29a', '31', '32']},
+        {'stop': 'Harmonstown Rd', 'routes': ['6', '14']},
+    ],
+    'D7': [
+        {'stop': 'Phibsborough Rd', 'routes': ['4', '9', '38', '46a', '120']},
+        {'stop': 'Cabra', 'routes': ['38', '38a', '39']},
+    ],
+    'D9': [
+        {'stop': 'Drumcondra Rd', 'routes': ['1', '11', '13', '16', '33', '41']},
+        {'stop': 'Griffith Ave', 'routes': ['9', '13', '17a']},
+    ],
+    'D11': [
+        {'stop': 'Finglas Village', 'routes': ['17a', '40', '40b', '40d']},
+        {'stop': 'Clearwater SC', 'routes': ['17a', '40', '140']},
+    ],
+    'D13': [
+        {'stop': 'Donaghmede SC', 'routes': ['17', '27', '42', '43']},
+        {'stop': 'Clarehall', 'routes': ['15', '27', '29a']},
+    ],
+    'D15': [
+        {'stop': 'Blanchardstown SC', 'routes': ['38', '39', '76a', '220']},
+        {'stop': 'Castleknock', 'routes': ['37', '38', '39']},
+    ],
+    'D17': [
+        {'stop': 'Coolock Village', 'routes': ['17', '27', '42']},
+        {'stop': 'Northside SC', 'routes': ['27', '42', '43']},
+    ],
+}
+
+
+@app.route('/api/bus/stops')
+def api_bus_stops():
+    """Return bus stops and routes for selected Dublin area."""
+    area = request.args.get('area', 'D1').upper()
+    stops = DUBLIN_BUS_STOPS.get(area, DUBLIN_BUS_STOPS.get('D1', []))
+    return jsonify({'area': area, 'stops': stops})
+
+
 @app.route('/api/tests/list')
 def api_tests_list():
     """List all tests in the suite (class, method, docstring) without running them."""
