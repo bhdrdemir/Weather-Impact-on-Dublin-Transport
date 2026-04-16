@@ -976,15 +976,22 @@ merged = extract_merged_features(merged)      # add interaction features</div>
 
 <div class="card doc-section">
 <h2>9. AI Disclosure &amp; Ethics</h2>
-<p><strong>Level 4 disclosure.</strong> Claude (Anthropic) was used as a coding assistant to:</p>
-<ul>
-  <li>Refactor the pipeline from CSV-loaded to fully API-driven</li>
-  <li>Write the Flask routes, test harness, and dashboard HTML/JS</li>
-  <li>Debug the JSON-stat 2.0 parser when CSO changed response format</li>
-</ul>
-<p>All business logic, data choices, analytical framing, and final architecture decisions were made by
-the author. Code was reviewed and adapted for correctness; AI output was not accepted unreviewed.</p>
-<p>No personal data is processed. All sources are public open data.</p>
+<p><strong>Full transparency.</strong> This project was built with a mix of my own coding and AI assistance (Claude, Anthropic).</p>
+
+<h3>What I did</h3>
+<p>I designed the overall project idea and decided what data sources to use. I wrote the API call
+functions for Open-Meteo, CSO PxStat, Irish Rail, and the Luas Forecasting API. I chose which
+weather variables to track, how to structure the database tables, and what correlations to look at.
+I also did the data analysis and decided on the delay proxy metric. All the API integration code
+in <code>pipeline.py</code> was written by me.</p>
+
+<h3>What AI helped with</h3>
+<p>I used Claude as a coding assistant for the frontend dashboard (HTML/CSS/JavaScript),
+the Flask route handlers in <code>app.py</code>, the test suite structure, and debugging issues
+like the JSON-stat 2.0 parser change. I reviewed and tested all AI-generated code before including it.
+The AI did not make any decisions about data sources, analysis approach, or project scope.</p>
+
+<p>No personal data is processed. All sources are public open data with no authentication required.</p>
 </div>
 
 <div class="card doc-section">
