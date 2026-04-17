@@ -317,91 +317,107 @@ def api_areas():
 @app.route('/api/live')
 def api_live():
     """
-    Live data endpoint — called every 60s by the dashboard.
-    Query parameter: area (default D1).
-    Returns current weather + hourly forecast for the selected area,
-    plus Luas real-time + Irish Rail real-time (same for all areas).
+    Live data endpoint — fetches ALL areas in a single Open-Meteo call
+    plus Luas/Rail. Frontend caches it and switches areas instantly.
     """
-    area_code = request.args.get('area', 'D1').upper()
-    area = DUBLIN_AREAS.get(area_code, DUBLIN_AREAS['D1'])
-    result = {
-        'timestamp': datetime.now().isoformat(),
-        'area': {'code': area_code, **area},
-    }
+    import requests as _req
+    from concurrent.futures import ThreadPoolExecutor
 
-    # Current weather + 24h hourly forecast (single Open-Meteo call)
+    result = {'timestamp': datetime.now().isoformat(), 'areas': {}}
+
+    # Fetch ALL areas in a SINGLE Open-Meteo call (multi-location)
+    lats = ','.join(str(a['lat']) for a in DUBLIN_AREAS.values())
+    lons = ','.join(str(a['lon']) for a in DUBLIN_AREAS.values())
+    area_codes = list(DUBLIN_AREAS.keys())
+
     try:
-        import requests as _req
         resp = _req.get('https://api.open-meteo.com/v1/forecast', params={
-            'latitude': area['lat'], 'longitude': area['lon'],
+            'latitude': lats, 'longitude': lons,
             'current': 'temperature_2m,relative_humidity_2m,rain,wind_speed_10m,'
                        'surface_pressure,cloud_cover,weather_code',
             'hourly': 'temperature_2m,rain,wind_speed_10m,weather_code',
             'forecast_hours': 24,
             'timezone': 'Europe/Dublin'
-        }, timeout=8)
+        }, timeout=10)
         resp.raise_for_status()
-        data = resp.json()
-        c = data.get('current', {})
-        code = c.get('weather_code', 0)
-        severity = compute_weather_severity(
-            c.get('temperature_2m', 10), c.get('rain', 0), c.get('wind_speed_10m', 10))
-        result['weather'] = {
-            'temp': c.get('temperature_2m'),
-            'humidity': c.get('relative_humidity_2m'),
-            'rain': c.get('rain', 0),
-            'wind_speed': c.get('wind_speed_10m'),
-            'pressure': c.get('surface_pressure'),
-            'cloud_cover': c.get('cloud_cover'),
-            'description': WMO_CODES.get(code, f'Code {code}'),
-            'weather_code': code,
-            'severity': severity,
-            'observed_at': c.get('time'),
-        }
+        all_data = resp.json()
 
-        # Hourly forecast (next 24h)
-        h = data.get('hourly', {})
-        times = h.get('time', [])
-        temps = h.get('temperature_2m', [])
-        rains = h.get('rain', [])
-        winds = h.get('wind_speed_10m', [])
-        codes = h.get('weather_code', [])
-        forecast = []
-        for i in range(min(24, len(times))):
-            forecast.append({
-                'time': times[i],
-                'temp': temps[i] if i < len(temps) else None,
-                'rain': rains[i] if i < len(rains) else 0,
-                'wind_speed': winds[i] if i < len(winds) else None,
-                'weather_code': codes[i] if i < len(codes) else 0,
-                'description': WMO_CODES.get(codes[i] if i < len(codes) else 0, ''),
-            })
-        result['forecast'] = forecast
+        # Multi-location returns a list of results
+        if not isinstance(all_data, list):
+            all_data = [all_data]
+
+        for i, code in enumerate(area_codes):
+            data = all_data[i] if i < len(all_data) else {}
+            c = data.get('current', {})
+            wcode = c.get('weather_code', 0)
+            severity = compute_weather_severity(
+                c.get('temperature_2m', 10), c.get('rain', 0), c.get('wind_speed_10m', 10))
+            weather = {
+                'temp': c.get('temperature_2m'),
+                'humidity': c.get('relative_humidity_2m'),
+                'rain': c.get('rain', 0),
+                'wind_speed': c.get('wind_speed_10m'),
+                'pressure': c.get('surface_pressure'),
+                'cloud_cover': c.get('cloud_cover'),
+                'description': WMO_CODES.get(wcode, f'Code {wcode}'),
+                'weather_code': wcode,
+                'severity': severity,
+            }
+            h = data.get('hourly', {})
+            times = h.get('time', [])
+            temps = h.get('temperature_2m', [])
+            rains = h.get('rain', [])
+            winds = h.get('wind_speed_10m', [])
+            codes = h.get('weather_code', [])
+            forecast = []
+            for j in range(min(24, len(times))):
+                forecast.append({
+                    'time': times[j],
+                    'temp': temps[j] if j < len(temps) else None,
+                    'rain': rains[j] if j < len(rains) else 0,
+                    'wind_speed': winds[j] if j < len(winds) else None,
+                    'weather_code': codes[j] if j < len(codes) else 0,
+                    'description': WMO_CODES.get(codes[j] if j < len(codes) else 0, ''),
+                })
+            result['areas'][code] = {
+                'name': DUBLIN_AREAS[code]['name'],
+                'weather': weather, 'forecast': forecast,
+            }
     except Exception as e:
-        result['weather'] = {'error': str(e)}
-        result['forecast'] = []
+        # Fallback: empty weather for all areas
+        for code in area_codes:
+            result['areas'][code] = {
+                'name': DUBLIN_AREAS[code]['name'],
+                'weather': {'error': str(e)}, 'forecast': [],
+            }
 
-    # Luas real-time (key stops for speed)
-    try:
-        luas = fetch_luas_all_stops(key_only=True)
-        result['luas'] = luas
-        result['luas_count'] = len(luas)
-    except Exception:
-        result['luas'] = []
-        result['luas_count'] = 0
+    # Luas + Rail fetched in parallel
+    def get_luas():
+        try:
+            return fetch_luas_all_stops(key_only=True)
+        except Exception:
+            return []
 
-    # Irish Rail real-time
-    try:
-        rail_df = fetch_irish_rail_realtime()
-        if not rail_df.empty:
-            result['rail'] = json.loads(rail_df.to_json(orient='records'))
-            result['rail_count'] = len(rail_df)
-        else:
-            result['rail'] = []
-            result['rail_count'] = 0
-    except Exception:
-        result['rail'] = []
-        result['rail_count'] = 0
+    def get_rail():
+        try:
+            df = fetch_irish_rail_realtime()
+            return json.loads(df.to_json(orient='records')) if not df.empty else []
+        except Exception:
+            return []
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        luas_future = pool.submit(get_luas)
+        rail_future = pool.submit(get_rail)
+        luas = luas_future.result()
+        rail = rail_future.result()
+
+    result['luas'] = luas
+    result['luas_count'] = len(luas)
+    result['rail'] = rail
+    result['rail_count'] = len(rail)
+
+    # Bus stops for all areas (static data, no API call)
+    result['bus_stops'] = {code: DUBLIN_BUS_STOPS.get(code, []) for code in area_codes}
 
     return jsonify(result)
 
