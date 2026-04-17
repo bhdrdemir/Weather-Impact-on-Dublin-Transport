@@ -453,8 +453,8 @@ textarea:focus { outline: none; border-color: #16a34a; }
       </div>
 
       <div class="mode-section">
-        <h4>Dublin Bus &mdash; nearby stops</h4>
-        <div id="busList" style="max-height:200px; overflow-y:auto;">
+        <h4>Dublin Bus &mdash; live arrivals</h4>
+        <div id="busList" style="max-height:360px; overflow-y:auto;">
           <div class="empty-state">Loading...</div>
         </div>
       </div>
@@ -1126,7 +1126,7 @@ function updateTransport(d) {
   // Bus count from cached stops for selected area
   const busStops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[selectedArea]) ? liveCache.bus_stops[selectedArea] : [];
   const allRoutes = new Set();
-  busStops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(r)));
+  busStops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(typeof r === 'object' ? r.route : r)));
   document.getElementById('t-bus').textContent = allRoutes.size;
   document.getElementById('t-luas').textContent = d.luas_count ?? 0;
   document.getElementById('t-rail').textContent = d.rail_count ?? 0;
@@ -1252,7 +1252,7 @@ function renderDelayBanner(risk) {
     </div>`;
 }
 
-// ============ BUS STOPS (from cache with stop selector) ============
+// ============ BUS STOPS (dropdown + live arrival board) ============
 function displayBusStops(code) {
   const container = document.getElementById('busList');
   const stops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[code]) ? liveCache.bus_stops[code] : [];
@@ -1262,56 +1262,68 @@ function displayBusStops(code) {
     return;
   }
   const allRoutes = new Set();
-  stops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(r)));
+  stops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(typeof r === 'object' ? r.route : r)));
   document.getElementById('t-bus').textContent = allRoutes.size;
 
-  // Bus stop selector buttons + detail view
   container.innerHTML = `
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
-      ${stops.map((s, i) => `
-        <button class="area-btn ${i === 0 ? 'active' : ''}" onclick="selectBusStop('${escapeHtml(code)}', ${i}, this)">
-          ${escapeHtml(s.stop)}
-        </button>
-      `).join('')}
+    <div style="margin-bottom:10px;">
+      <select id="busStopSelect" onchange="loadBusArrivals()" style="
+        width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px;
+        font-size:13px; background:#f9fafb; color:#1e293b; cursor:pointer;">
+        ${stops.map((s, i) => `<option value="${i}">${escapeHtml(s.stop)}${s.stop_id ? ' (Stop ' + escapeHtml(s.stop_id) + ')' : ''}</option>`).join('')}
+      </select>
     </div>
-    <div id="busStopDetail">
-      ${renderBusStop(stops[0])}
-    </div>`;
+    <div id="busArrivals"><div class="empty-state">Select a stop to see arrivals...</div></div>`;
+  loadBusArrivals();
 }
 
-function selectBusStop(code, idx, btn) {
-  const stops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[code]) ? liveCache.bus_stops[code] : [];
-  if (!stops[idx]) return;
-  btn.parentElement.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('busStopDetail').innerHTML = renderBusStop(stops[idx]);
+async function loadBusArrivals() {
+  const sel = document.getElementById('busStopSelect');
+  if (!sel) return;
+  const idx = sel.value;
+  const panel = document.getElementById('busArrivals');
+  panel.innerHTML = '<div class="empty-state" style="color:#16a34a;">Loading arrivals...</div>';
+  try {
+    const r = await fetch('/api/bus/arrivals?area=' + encodeURIComponent(selectedArea) + '&stop_idx=' + idx);
+    const d = await r.json();
+    if (d.error) { panel.innerHTML = '<div class="empty-state">' + escapeHtml(d.error) + '</div>'; return; }
+    renderBusArrivals(d, panel);
+  } catch (e) {
+    panel.innerHTML = '<div class="empty-state">Failed to load arrivals</div>';
+  }
 }
 
-function renderBusStop(stop) {
-  const hour = new Date().getHours();
-  const isRush = (hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 19);
-  const areaWeather = (liveCache && liveCache.areas && liveCache.areas[selectedArea]) ? liveCache.areas[selectedArea].weather : null;
-  const severity = (areaWeather && areaWeather.severity) || 0;
+function renderBusArrivals(data, panel) {
+  const arr = data.arrivals || [];
+  if (arr.length === 0) { panel.innerHTML = '<div class="empty-state">No buses expected</div>'; return; }
 
-  return `
-    <div style="padding:10px; background:#f0fdf4; border:1px solid #d1d5db; border-radius:6px;">
-      <div style="font-weight:600; font-size:14px; color:#1e293b; margin-bottom:8px;">${escapeHtml(stop.stop)}</div>
-      <div style="display:flex; flex-wrap:wrap; gap:6px;">
-        ${(stop.routes || []).map(route => {
-          const freq = isRush ? '5\u201310 min' : '12\u201320 min';
-          const crowdLevel = isRush ? (severity > 4 ? 'Busy' : 'Moderate') : 'Low';
-          const crowdColor = crowdLevel === 'Busy' ? '#dc2626' : crowdLevel === 'Moderate' ? '#d97706' : '#16a34a';
-          return `
-            <div style="background:white; border:1px solid #d1d5db; border-radius:6px; padding:8px 12px; min-width:90px;">
-              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                <span style="background:#16a34a; color:white; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700; font-family:'Menlo','Consolas',monospace;">${escapeHtml(route)}</span>
-                <span style="font-size:10px; color:${crowdColor}; font-weight:600;">${crowdLevel}</span>
-              </div>
-              <div style="font-size:11px; color:#6b7280;">Every ${freq}</div>
-            </div>`;
-        }).join('')}
-      </div>
-    </div>`;
+  const crowdColors = { 'Empty':'#16a34a', 'Quiet':'#16a34a', 'Moderate':'#d97706', 'Busy':'#ea580c', 'Very Busy':'#dc2626' };
+  const crowdIcons  = { 'Empty':'\u25CB', 'Quiet':'\u25CB', 'Moderate':'\u25D1', 'Busy':'\u25CF', 'Very Busy':'\u25CF' };
+
+  panel.innerHTML = arr.map(a => {
+    const delayTag = a.delay_min > 0
+      ? '<span style="color:#dc2626; font-size:11px; font-weight:600;">+' + a.delay_min + ' min late</span>'
+      : '<span style="color:#16a34a; font-size:11px; font-weight:600;">On time</span>';
+    const cc = crowdColors[a.crowd_label] || '#6b7280';
+    const ci = crowdIcons[a.crowd_label] || '';
+    return `
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #e5e7eb;">
+        <span style="background:#16a34a; color:white; padding:3px 10px; border-radius:4px;
+          font-size:13px; font-weight:700; font-family:'Menlo','Consolas',monospace; min-width:44px; text-align:center;">${escapeHtml(a.route)}</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            \u2192 ${escapeHtml(a.towards)}</div>
+          <div style="display:flex; gap:8px; align-items:center; margin-top:2px;">
+            ${delayTag}
+            <span style="color:${cc}; font-size:11px;">${ci} ${escapeHtml(a.crowd_label)}</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <div style="font-size:20px; font-weight:700; color:#166534; line-height:1;">${a.eta_min}</div>
+          <div style="font-size:10px; color:#6b7280;">min</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function escapeHtml(s) {
