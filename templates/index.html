@@ -556,7 +556,8 @@ textarea:focus { outline: none; border-color: #16a34a; }
     <div class="card-title">Run Full Pipeline <span class="tag">~5-10 seconds</span></div>
     <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       Fetches data from 3 public APIs (Open-Meteo, CSO PxStat, Irish Rail), runs feature extraction,
-      merges weather + transport, and loads into SQLite.
+      merges weather + transport, and loads into SQLite. The pipeline also builds the correlation
+      model that powers the live delay predictions on the Dashboard.
     </p>
     <button class="btn" id="btnRunPipeline" onclick="runPipeline()">Run Pipeline</button>
   </div>
@@ -797,13 +798,14 @@ merged = extract_merged_features(merged)  # interaction features</div>
 <p>
 This project implements a full <strong>Data Acquisition &amp; Preprocessing Pipeline</strong> for analysing
 how weather affects public transport ridership in Dublin. The deliverable is a local Flask web application
-that fetches data from three public APIs in real time, runs a feature-extraction pipeline, stores the
-output in SQLite, and serves an interactive dashboard.
+that fetches live data from four public APIs, runs a feature-extraction pipeline, stores the
+output in SQLite, and serves an interactive dashboard with real-time weather-based transport predictions.
 </p>
 <p>
 Assignment scope per the B9AI001 CA2 brief: API-based data acquisition, feature extraction,
 transformation, database loading, unit + integration testing, and documentation &mdash; all tied together by
-a reproducible end-to-end pipeline.
+a reproducible end-to-end pipeline. The dashboard also applies historical correlation coefficients
+to live weather data to produce delay risk and crowdedness predictions for Dublin Bus, Luas, and Irish Rail.
 </p>
 </div>
 
@@ -811,26 +813,33 @@ a reproducible end-to-end pipeline.
 <h2>2. System Architecture</h2>
 <div class="code-block">User's Browser (index.html, Chart.js)
         |
-        |  HTTP
+        |  HTTP  (auto-refresh 60s, client-side cache)
         v
 Flask Backend (app.py)
         |
-        +-- GET /api/live         -&gt; fresh weather + live Luas/Rail (every 60s)
-        +-- POST /api/pipeline/run -&gt; background thread runs full pipeline
+        +-- GET /api/live            -&gt; ALL 9 areas weather + Luas/Rail (single call)
+        +-- GET /api/bus/arrivals    -&gt; estimated bus arrivals with delay/crowd predictions
+        +-- GET /api/prediction      -&gt; delay risk from live weather + DB correlations
+        +-- POST /api/pipeline/run   -&gt; background thread runs full pipeline
         +-- GET /api/features/sample -&gt; sample rows from every DB table
         +-- GET /api/dashboard/data, /api/stats -&gt; historical analytics
         +-- GET /api/tables, /api/query -&gt; DB browser + SQL editor
-        +-- GET /api/tests/run     -&gt; unit + integration tests
+        +-- GET /api/tests/run       -&gt; unit + integration tests
         |
         v
 Pipeline (pipeline.py) &lt;-&gt; SQLite (dublin_transport.db, 8 tables)
         |
         v
 External APIs:
- - Open-Meteo        (historical + current weather)
- - CSO PxStat REST   (monthly bus + Luas passengers)
- - Irish Rail        (real-time train positions)
- - Luas Forecasting  (real-time tram arrivals - live only)</div>
+ - Open-Meteo        (historical archive + live multi-location forecast)
+ - CSO PxStat REST   (monthly bus + Luas passengers, JSON-stat 2.0)
+ - Irish Rail        (real-time train positions, XML)
+ - Luas Forecasting  (real-time tram arrivals per stop, XML)</div>
+<p style="color:#6b7280; font-size:13px; margin-top:10px;">
+  The <code>/api/live</code> endpoint fetches all 9 Dublin districts in a single Open-Meteo multi-location
+  call, then fetches Luas and Irish Rail in parallel using <code>ThreadPoolExecutor</code>. All data is
+  cached client-side so area switching is instant with no reload.
+</p>
 </div>
 
 <div class="card doc-section">
@@ -966,36 +975,56 @@ merged = extract_merged_features(merged)      # add interaction features</div>
 <div class="card doc-section">
 <h2>8. Statistical Analysis</h2>
 <ul>
-  <li><strong>Pearson correlation</strong> &mdash; linear relationship weather-variable vs passengers</li>
+  <li><strong>Pearson correlation</strong> &mdash; linear relationship between weather variables and the delay proxy</li>
   <li><strong>Spearman correlation</strong> &mdash; rank-based, catches monotonic (non-linear) trends</li>
-  <li><strong>Kruskal-Wallis H-test</strong> &mdash; whether passenger medians differ across weather groups
+  <li><strong>Kruskal-Wallis H-test</strong> &mdash; whether delay-proxy medians differ significantly across weather groups
       (rain_group, temp_group, severity_group)</li>
 </ul>
 <p>All computed on-the-fly from the merged DB table, served via <code>/api/stats</code>.</p>
 </div>
 
 <div class="card doc-section">
-<h2>9. AI Disclosure &amp; Ethics</h2>
-<p><strong>Full transparency.</strong> This project was built with a mix of my own coding and AI assistance (Claude, Anthropic).</p>
+<h2>9. Live Prediction Model</h2>
+<p>The dashboard uses the historical correlations to predict delay risk and crowdedness in real time:</p>
+<ul>
+  <li><strong>Delay risk</strong> &mdash; for each live weather reading (temperature, rain, wind),
+      the system scores risk using the Pearson correlation coefficients from the historical DB.
+      A positive correlation between rainfall and delay proxy means more rain &rarr; higher delay risk.
+      The score is mapped to a 0&ndash;4 level (Normal &rarr; Severe disruption).</li>
+  <li><strong>Crowdedness</strong> &mdash; estimated from time-of-day (rush vs off-peak) and weather severity.
+      Bad weather pushes more people onto public transport, increasing crowdedness. Combined with
+      route-level frequency data to give per-bus predictions.</li>
+  <li><strong>Bus arrival estimates</strong> &mdash; base frequencies adjusted by weather-driven delay factors.
+      Each route has rush-hour and off-peak intervals; weather severity adds proportional delay.</li>
+</ul>
+<div class="code-block">severity = compute_weather_severity(temp, rain, wind)  # 0-10
+weather_delay_pct = severity * 4.0   # up to 40% longer wait
+adjusted_freq = base_freq * (1.0 + weather_delay_pct / 100)
+# Crowdedness increases in rush hour + bad weather (more people take bus)</div>
+</div>
+
+<div class="card doc-section">
+<h2>10. AI Disclosure &amp; Ethics</h2>
+<p><strong>Full transparency.</strong> This project was built with a mix of my own coding and AI assistance.</p>
 
 <h3>What I did</h3>
 <p>I designed the overall project idea and decided what data sources to use. I wrote the API call
 functions for Open-Meteo, CSO PxStat, Irish Rail, and the Luas Forecasting API. I chose which
 weather variables to track, how to structure the database tables, and what correlations to look at.
 I also did the data analysis and decided on the delay proxy metric. All the API integration code
-in <code>pipeline.py</code> was written by me.</p>
+in <code>pipeline.py</code> and the Flask route handlers in <code>app.py</code> were written by me.</p>
 
 <h3>What AI helped with</h3>
-<p>I used Claude as a coding assistant for the frontend dashboard (HTML/CSS/JavaScript),
-the Flask route handlers in <code>app.py</code>, the test suite structure, and debugging issues
-like the JSON-stat 2.0 parser change. I reviewed and tested all AI-generated code before including it.
+<p>I used an AI coding assistant for the frontend dashboard (HTML/CSS/JavaScript),
+the test suite structure, and debugging issues like the JSON-stat 2.0 parser change.
+I reviewed and tested all AI-generated code before including it.
 The AI did not make any decisions about data sources, analysis approach, or project scope.</p>
 
 <p>No personal data is processed. All sources are public open data with no authentication required.</p>
 </div>
 
 <div class="card doc-section">
-<h2>10. Attributions &amp; Licences</h2>
+<h2>11. Attributions &amp; Licences</h2>
 <ul>
   <li><strong>Open-Meteo</strong> &mdash; CC BY 4.0
     (<a href="https://open-meteo.com" target="_blank" style="color:#16a34a;">open-meteo.com</a>)</li>
