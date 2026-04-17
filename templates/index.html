@@ -539,6 +539,19 @@ textarea:focus { outline: none; border-color: #16a34a; }
     </details>
   </div>
 
+  <div class="card" id="crowdCard" style="display:none;">
+    <div class="card-title">Weather &rarr; Crowdedness Impact <span class="tag">ridership by severity</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
+      How weather severity affects passenger volume. Higher ridership under bad weather means
+      more people switch to public transport, leading to crowded vehicles. This drives the
+      live crowdedness predictions shown in the bus arrivals above.
+    </p>
+    <div class="grid-2">
+      <div><div class="chart-box" style="height:280px;"><canvas id="chartCrowdSeverity"></canvas></div></div>
+      <div><div class="chart-box" style="height:280px;"><canvas id="chartCrowdSeasonal"></canvas></div></div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title">Historical Transport &amp; Weather &middot; 2022&ndash;2024 <span class="tag">monthly &middot; ex-COVID</span></div>
     <div id="histStatus" class="info-box" style="display:none;">
@@ -1449,6 +1462,13 @@ async function loadHistorical() {
       renderCorrelations(stats);
       document.getElementById('correlationCard').style.display = 'block';
     }
+
+    // Crowdedness impact charts
+    if (dash.impact && dash.impact.length > 0) {
+      drawCrowdSeverity(dash.impact);
+      drawCrowdSeasonal(dash.seasonal || []);
+      document.getElementById('crowdCard').style.display = 'block';
+    }
   } catch (e) {
     console.error('Historical load failed:', e);
   }
@@ -1504,6 +1524,72 @@ function drawSeasonal(seasonal) {
       scales: {
         x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
         y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } }
+      }
+    }
+  });
+}
+
+let chartCrowdSev = null, chartCrowdSeas = null;
+
+function drawCrowdSeverity(impact) {
+  const ctx = document.getElementById('chartCrowdSeverity');
+  if (!ctx) return;
+  if (chartCrowdSev) chartCrowdSev.destroy();
+  const order = ['Low','Medium','High'];
+  const sorted = order.map(g => impact.find(x => x.severity_group === g)).filter(Boolean);
+  chartCrowdSev = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => s.severity_group + ' Severity'),
+      datasets: [
+        { label: 'Bus passengers', data: sorted.map(s => s.avg_bus), backgroundColor: '#16a34a', borderRadius: 4 },
+        { label: 'Luas passengers', data: sorted.map(s => s.avg_luas), backgroundColor: '#166534', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: 'Ridership by Weather Severity', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
+      scales: {
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Avg monthly passengers', color: '#6b7280', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function drawCrowdSeasonal(seasonal) {
+  const ctx = document.getElementById('chartCrowdSeasonal');
+  if (!ctx) return;
+  if (chartCrowdSeas) chartCrowdSeas.destroy();
+  const order = ['Winter','Spring','Summer','Autumn'];
+  const sorted = order.map(s => seasonal.find(x => x.season === s)).filter(Boolean);
+  // Total passengers = bus + luas, shows overall crowdedness pressure
+  const totals = sorted.map(s => (s.avg_bus || 0) + (s.avg_luas || 0));
+  const severity = sorted.map(s => s.avg_severity || 0);
+  chartCrowdSeas = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => s.season),
+      datasets: [
+        { label: 'Total passengers', data: totals, backgroundColor: '#16a34a', borderRadius: 4, yAxisID: 'y' },
+        { label: 'Avg severity', data: severity, type: 'line', borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.1)', pointRadius: 5, pointBackgroundColor: '#dc2626',
+          borderWidth: 2, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: 'Seasonal Crowdedness vs Weather', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
+      scales: {
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } },
+        y: { position: 'left', ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Total passengers', color: '#6b7280', font: { size: 11 } } },
+        y1: { position: 'right', ticks: { color: '#dc2626' }, grid: { display: false },
+              title: { display: true, text: 'Weather severity', color: '#dc2626', font: { size: 11 } },
+              min: 0, max: 10 }
       }
     }
   });
