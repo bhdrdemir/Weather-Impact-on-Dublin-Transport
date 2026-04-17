@@ -311,11 +311,11 @@ textarea:focus { outline: none; border-color: #16a34a; }
   padding: 14px; border-radius: 8px; margin-bottom: 14px;
   border: 1px solid;
 }
-.delay-banner.level-0 { background: #052e16; border-color: #14532d; color: #86efac; }
-.delay-banner.level-1 { background: #1a2e05; border-color: #3f6212; color: #bef264; }
-.delay-banner.level-2 { background: #422006; border-color: #854d0e; color: #fde047; }
-.delay-banner.level-3 { background: #431407; border-color: #9a3412; color: #fdba74; }
-.delay-banner.level-4 { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
+.delay-banner.level-0 { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.delay-banner.level-1 { background: #fefce8; border-color: #fde047; color: #854d0e; }
+.delay-banner.level-2 { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+.delay-banner.level-3 { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.delay-banner.level-4 { background: #fef2f2; border-color: #f87171; color: #7f1d1d; }
 
 .delay-icon {
   font-size: 22px; flex-shrink: 0;
@@ -431,7 +431,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
     </div>
 
     <div class="card">
-      <div class="card-title">Live Public Transport <span class="tag">luas &amp; irish rail</span></div>
+      <div class="card-title">Live Public Transport <span class="tag">bus · luas · rail</span></div>
 
       <div id="delayContainer">
         <div style="color:#64748b; font-size:12px;">Loading delay prediction...</div>
@@ -478,7 +478,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
   <div class="card">
     <div class="card-title">Dublin Weather Map <span class="tag">interactive</span></div>
     <p style="color:#6b7280; font-size:13px; margin-bottom:10px;">
-      Click on any district to switch the weather view. Colours show current temperature.
+      Live weather conditions across Dublin districts. Colours show current temperature.
     </p>
     <div id="dublinMap" style="display:flex; justify-content:center; padding:10px 0;">
       <svg viewBox="0 0 500 400" width="100%" style="max-width:500px;" id="mapSvg">
@@ -487,7 +487,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
         <!-- Water — Dublin Bay -->
         <path d="M350,50 Q500,100 480,250 L500,250 L500,0 L350,0 Z" fill="#e0f2fe" opacity="0.5"/>
         <!-- District areas (approximate positions based on real geography) -->
-        <g id="mapAreas" style="cursor:pointer;">
+        <g id="mapAreas">
           <rect data-area="D1"  x="200" y="120" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
           <text x="240" y="155" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D1</text>
           <rect data-area="D3"  x="300" y="100" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
@@ -509,7 +509,7 @@ textarea:focus { outline: none; border-color: #16a34a; }
         </g>
         <!-- Legend -->
         <text x="20" y="370" font-size="11" fill="#6b7280">Dublin Bay →</text>
-        <text x="20" y="385" font-size="10" fill="#9ca3af">Click a district to view weather</text>
+        <text x="20" y="385" font-size="10" fill="#9ca3af">Weather icons show live conditions</text>
       </svg>
     </div>
   </div>
@@ -1026,6 +1026,7 @@ function switchTab(id, btn) {
 
 let liveInterval = null;
 let selectedArea = 'D1';
+let liveCache = null;
 
 async function loadAreas() {
   try {
@@ -1044,22 +1045,24 @@ async function loadAreas() {
 function setArea(code) {
   selectedArea = code;
   document.querySelectorAll('.area-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent === code);
+    b.classList.toggle('active', b.textContent.trim() === code);
   });
-  refreshLive();
+  if (liveCache) {
+    displayAreaData(code);
+    updateMapWeather();
+  }
 }
 
 async function refreshLive() {
   const dot = document.getElementById('liveDot');
   dot.classList.add('loading');
   try {
-    const r = await fetch('/api/live?area=' + encodeURIComponent(selectedArea));
+    const r = await fetch('/api/live');
     const d = await r.json();
-    updateWeather(d.weather || {}, d.area || {});
-    updateForecast(d.forecast || []);
+    liveCache = d;
+    displayAreaData(selectedArea);
     updateTransport(d);
-    updateDelayPrediction(d.weather || {});
-    loadBusStops();
+    updateMapWeather();
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
   } catch (e) {
     console.error('Live refresh failed:', e);
@@ -1067,18 +1070,27 @@ async function refreshLive() {
   dot.classList.remove('loading');
 }
 
-function updateWeather(w, area) {
+function displayAreaData(code) {
+  if (!liveCache || !liveCache.areas || !liveCache.areas[code]) return;
+  const areaData = liveCache.areas[code];
+  updateWeather(areaData.weather || {}, areaData.name || code);
+  updateForecast(areaData.forecast || []);
+  updateDelayPrediction(areaData.weather || {});
+  displayBusStops(code);
+}
+
+function updateWeather(w, areaName) {
   const nowEl = document.getElementById('w-now');
   if (nowEl) nowEl.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  document.getElementById('w-loc').textContent = area.name || 'Dublin, Ireland';
+  document.getElementById('w-loc').textContent = areaName || 'Dublin, Ireland';
 
   if (w.error || w.temp == null) {
-    document.getElementById('w-temp').textContent = '—';
+    document.getElementById('w-temp').textContent = '\u2014';
     document.getElementById('w-desc').textContent = 'Unavailable';
     return;
   }
-  document.getElementById('w-temp').textContent = Math.round(w.temp) + '°';
-  document.getElementById('w-desc').textContent = w.description || '—';
+  document.getElementById('w-temp').textContent = Math.round(w.temp) + '\u00B0';
+  document.getElementById('w-desc').textContent = w.description || '\u2014';
   document.getElementById('w-humidity').textContent = (w.humidity ?? 0) + '%';
   document.getElementById('w-wind').textContent = (w.wind_speed ?? 0).toFixed(1) + ' km/h';
   document.getElementById('w-rain').textContent = (w.rain ?? 0).toFixed(1) + ' mm';
@@ -1104,23 +1116,27 @@ function updateForecast(hours) {
     return `
       <div class="${cls}" title="${escapeHtml(h.description || '')}">
         <div class="h-time">${hh}:00</div>
-        <div class="h-temp">${Math.round(h.temp ?? 0)}°</div>
+        <div class="h-temp">${Math.round(h.temp ?? 0)}\u00B0</div>
         <div class="h-rain">${rain}mm</div>
       </div>`;
   }).join('');
 }
 
 function updateTransport(d) {
+  // Bus count from cached stops for selected area
+  const busStops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[selectedArea]) ? liveCache.bus_stops[selectedArea] : [];
+  const allRoutes = new Set();
+  busStops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(r)));
+  document.getElementById('t-bus').textContent = allRoutes.size;
   document.getElementById('t-luas').textContent = d.luas_count ?? 0;
   document.getElementById('t-rail').textContent = d.rail_count ?? 0;
 
-  // Luas trams — show destination, direction, stop, ETA
+  // Luas trams
   const luasList = document.getElementById('luasList');
   const luas = d.luas || [];
   if (luas.length === 0) {
     luasList.innerHTML = '<div class="empty-state">No tram data</div>';
   } else {
-    // Group by stop
     const byStop = {};
     luas.forEach(t => {
       if (!byStop[t.stop]) byStop[t.stop] = [];
@@ -1135,7 +1151,7 @@ function updateTransport(d) {
           <div class="vehicle-row">
             <span class="vehicle-id">LUAS</span>
             <div class="vehicle-info">
-              <div>${escapeHtml(t.destination || '—')}</div>
+              <div>${escapeHtml(t.destination || '\u2014')}</div>
               <div class="vehicle-dir">${escapeHtml(t.direction || '')}</div>
             </div>
             <span class="vehicle-eta">${escapeHtml(t.due_mins || '?')} min</span>
@@ -1145,7 +1161,7 @@ function updateTransport(d) {
     `).join('');
   }
 
-  // Irish Rail — show code, direction, route, status
+  // Irish Rail
   const railList = document.getElementById('railList');
   const rail = d.rail || [];
   const statusLabel = s => {
@@ -1155,7 +1171,6 @@ function updateTransport(d) {
   if (rail.length === 0) {
     railList.innerHTML = '<div class="empty-state">No active trains</div>';
   } else {
-    // Prefer running trains
     const running = rail.filter(t => t.status === 'R').slice(0, 12);
     const shown = running.length > 0 ? running : rail.slice(0, 12);
     railList.innerHTML = shown.map(t => `
@@ -1172,19 +1187,15 @@ function updateTransport(d) {
 }
 
 function parseTrainMessage(msg) {
-  if (!msg) return '—';
-  // Irish Rail message format: "P509\nCobh to Cork\nExpected Departure 08:30"
-  // The \n are literal backslash-n characters, not real newlines
+  if (!msg) return '\u2014';
   const parts = msg.split(/\\n|\n/).map(s => s.trim()).filter(Boolean);
-  // Second part is usually "Origin to Destination"
   if (parts.length >= 2 && parts[1].match(/\s+to\s+/i)) {
-    return parts[1].replace(/\s+to\s+/i, ' → ');
+    return parts[1].replace(/\s+to\s+/i, ' \u2192 ');
   }
-  // Fallback: first line without the train code
   return (parts[1] || parts[0] || msg).substring(0, 60);
 }
 
-// ============ DELAY PREDICTION ============
+// ============ DELAY PREDICTION (single combined banner) ============
 async function updateDelayPrediction(w) {
   if (!w || w.temp == null) return;
   const container = document.getElementById('delayContainer');
@@ -1195,25 +1206,45 @@ async function updateDelayPrediction(w) {
       return;
     }
     const d = await r.json();
-    container.innerHTML = renderDelayBanner('Bus', d.bus) + renderDelayBanner('Luas', d.luas);
+    // Single combined prediction - use higher risk level
+    const busLevel = (d.bus && d.bus.level) || 0;
+    const luasLevel = (d.luas && d.luas.level) || 0;
+    const primary = busLevel >= luasLevel ? d.bus : d.luas;
+    // Deduplicate reasoning by factor name
+    const allReasons = [].concat(d.bus ? d.bus.reasoning || [] : [], d.luas ? d.luas.reasoning || [] : []);
+    const seen = {};
+    const uniqueReasons = allReasons.filter(r => {
+      if (seen[r.factor]) return false;
+      seen[r.factor] = true;
+      return true;
+    });
+    const combined = {
+      level: Math.max(busLevel, luasLevel),
+      label: primary.label,
+      reasoning: uniqueReasons,
+    };
+    container.innerHTML = renderDelayBanner(combined);
   } catch (e) {
     container.innerHTML = '';
   }
 }
 
-function renderDelayBanner(mode, risk) {
+function renderDelayBanner(risk) {
   const level = risk.level;
-  const arrows = '↓'.repeat(Math.max(level, 1));
-  const iconChar = level === 0 ? '✓' : '▼';
   const reasons = (risk.reasoning || [])
     .map(r => `${r.factor} ${r.current}`)
-    .join(' · ') || 'Clear conditions';
+    .join(' \u00B7 ') || 'Clear conditions';
+  // Crowdedness estimate based on time of day + risk level
+  const hour = new Date().getHours();
+  const isRush = (hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 19);
+  const crowdLabel = isRush ? (level >= 2 ? 'Very Busy' : 'Busy') : (level >= 3 ? 'Busy' : 'Normal');
+  const iconHtml = level === 0 ? '&#10003;' : '&#9888;';
   return `
     <div class="delay-banner level-${level}">
-      <div class="delay-icon">${level === 0 ? '✓' : arrows}</div>
+      <div class="delay-icon">${iconHtml}</div>
       <div class="delay-content">
-        <div class="delay-title">${mode}: ${escapeHtml(risk.label)}</div>
-        <div class="delay-sub">${escapeHtml(reasons)}</div>
+        <div class="delay-title">${escapeHtml(risk.label)}</div>
+        <div class="delay-sub">${escapeHtml(reasons)} &middot; Crowdedness: <strong>${crowdLabel}</strong></div>
         <div class="delay-bars">
           ${[0,1,2,3].map(i => `<div class="delay-bar ${i < level ? 'filled' : ''}"></div>`).join('')}
         </div>
@@ -1221,29 +1252,66 @@ function renderDelayBanner(mode, risk) {
     </div>`;
 }
 
-async function loadBusStops() {
+// ============ BUS STOPS (from cache with stop selector) ============
+function displayBusStops(code) {
   const container = document.getElementById('busList');
-  try {
-    const r = await fetch('/api/bus/stops?area=' + encodeURIComponent(selectedArea));
-    const d = await r.json();
-    if (!d.stops || d.stops.length === 0) {
-      container.innerHTML = '<div class="empty-state">No bus data for this area</div>';
-      document.getElementById('t-bus').textContent = '0';
-      return;
-    }
-    const totalRoutes = new Set(d.stops.flatMap(s => s.routes)).size;
-    document.getElementById('t-bus').textContent = totalRoutes;
-    container.innerHTML = d.stops.map(s => `
-      <div style="margin-bottom:8px; padding:8px 10px; background:#f0fdf4; border:1px solid #d1d5db; border-radius:6px;">
-        <div style="font-weight:600; font-size:13px; color:#1e293b; margin-bottom:4px;">${escapeHtml(s.stop)}</div>
-        <div style="display:flex; flex-wrap:wrap; gap:4px;">
-          ${s.routes.map(r => `<span style="background:#16a34a; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; font-family:'Menlo','Consolas',monospace;">${escapeHtml(r)}</span>`).join('')}
-        </div>
-      </div>
-    `).join('');
-  } catch (e) {
-    container.innerHTML = '<div class="empty-state">Bus data unavailable</div>';
+  const stops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[code]) ? liveCache.bus_stops[code] : [];
+  if (stops.length === 0) {
+    container.innerHTML = '<div class="empty-state">No bus data for this area</div>';
+    document.getElementById('t-bus').textContent = '0';
+    return;
   }
+  const allRoutes = new Set();
+  stops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(r)));
+  document.getElementById('t-bus').textContent = allRoutes.size;
+
+  // Bus stop selector buttons + detail view
+  container.innerHTML = `
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+      ${stops.map((s, i) => `
+        <button class="area-btn ${i === 0 ? 'active' : ''}" onclick="selectBusStop('${escapeHtml(code)}', ${i}, this)">
+          ${escapeHtml(s.stop)}
+        </button>
+      `).join('')}
+    </div>
+    <div id="busStopDetail">
+      ${renderBusStop(stops[0])}
+    </div>`;
+}
+
+function selectBusStop(code, idx, btn) {
+  const stops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[code]) ? liveCache.bus_stops[code] : [];
+  if (!stops[idx]) return;
+  btn.parentElement.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('busStopDetail').innerHTML = renderBusStop(stops[idx]);
+}
+
+function renderBusStop(stop) {
+  const hour = new Date().getHours();
+  const isRush = (hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 19);
+  const areaWeather = (liveCache && liveCache.areas && liveCache.areas[selectedArea]) ? liveCache.areas[selectedArea].weather : null;
+  const severity = (areaWeather && areaWeather.severity) || 0;
+
+  return `
+    <div style="padding:10px; background:#f0fdf4; border:1px solid #d1d5db; border-radius:6px;">
+      <div style="font-weight:600; font-size:14px; color:#1e293b; margin-bottom:8px;">${escapeHtml(stop.stop)}</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        ${(stop.routes || []).map(route => {
+          const freq = isRush ? '5\u201310 min' : '12\u201320 min';
+          const crowdLevel = isRush ? (severity > 4 ? 'Busy' : 'Moderate') : 'Low';
+          const crowdColor = crowdLevel === 'Busy' ? '#dc2626' : crowdLevel === 'Moderate' ? '#d97706' : '#16a34a';
+          return `
+            <div style="background:white; border:1px solid #d1d5db; border-radius:6px; padding:8px 12px; min-width:90px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <span style="background:#16a34a; color:white; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700; font-family:'Menlo','Consolas',monospace;">${escapeHtml(route)}</span>
+                <span style="font-size:10px; color:${crowdColor}; font-weight:600;">${crowdLevel}</span>
+              </div>
+              <div style="font-size:11px; color:#6b7280;">Every ${freq}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
 }
 
 function escapeHtml(s) {
@@ -1252,6 +1320,67 @@ function escapeHtml(s) {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ============ WEATHER MAP (non-clickable, shows weather icons + temps) ============
+function weatherIcon(code) {
+  if (code === 0 || code === 1) return '\u2600';
+  if (code === 2) return '\u26C5';
+  if (code === 3) return '\u2601';
+  if (code >= 45 && code <= 48) return '\u2601';
+  if (code >= 51 && code <= 67) return '\uD83C\uDF27';
+  if (code >= 71 && code <= 77) return '\u2744';
+  if (code >= 80 && code <= 82) return '\uD83C\uDF26';
+  if (code >= 95) return '\u26C8';
+  return '\u2601';
+}
+
+function tempToColor(temp) {
+  if (temp == null) return '#dcfce7';
+  if (temp <= 0) return '#bfdbfe';
+  if (temp <= 5) return '#dbeafe';
+  if (temp <= 10) return '#d1fae5';
+  if (temp <= 15) return '#bbf7d0';
+  if (temp <= 20) return '#fef9c3';
+  return '#fed7aa';
+}
+
+function updateMapWeather() {
+  if (!liveCache || !liveCache.areas) return;
+  document.querySelectorAll('#mapAreas rect[data-area]').forEach(rect => {
+    const area = rect.getAttribute('data-area');
+    const data = liveCache.areas[area];
+    if (!data || !data.weather) return;
+    const w = data.weather;
+    const temp = w.temp;
+    const wcode = w.weather_code || 0;
+
+    // Colour rect by temperature
+    rect.setAttribute('fill', tempToColor(temp));
+    rect.setAttribute('stroke', area === selectedArea ? '#166534' : '#16a34a');
+    rect.setAttribute('stroke-width', area === selectedArea ? '2.5' : '1.5');
+
+    // Find the district label text (immediately after rect)
+    const textEl = rect.nextElementSibling;
+    if (!textEl || textEl.tagName !== 'text') return;
+
+    // Find or create weather info text element
+    let weatherText = textEl.nextElementSibling;
+    if (!weatherText || weatherText.tagName !== 'text' || !weatherText.hasAttribute('data-weather')) {
+      weatherText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      weatherText.setAttribute('data-weather', area);
+      weatherText.setAttribute('text-anchor', 'middle');
+      weatherText.setAttribute('font-size', '11');
+      textEl.parentNode.insertBefore(weatherText, textEl.nextSibling);
+    }
+    const x = textEl.getAttribute('x');
+    const baseY = parseInt(textEl.getAttribute('y'));
+    weatherText.setAttribute('x', x);
+    weatherText.setAttribute('y', String(baseY + 14));
+    weatherText.setAttribute('fill', '#374151');
+    weatherText.textContent = weatherIcon(wcode) + ' ' + (temp != null ? Math.round(temp) + '\u00B0' : '--');
+  });
+}
+
+// ============ CHARTS & HISTORICAL ============
 let chartTimeline = null, chartSeasonal = null, chartCorrelation = null;
 
 async function loadHistorical() {
@@ -1351,7 +1480,7 @@ function renderCorrelations(stats) {
       <td>${r.pearson_r.toFixed(3)}</td>
       <td>${r.pearson_p.toFixed(4)}</td>
       <td>${r.spearman_r.toFixed(3)}</td>
-      <td>${r.significant ? '✓' : '—'}</td>
+      <td>${r.significant ? '\u2713' : '\u2014'}</td>
     </tr>
   `).join('');
   drawCorrelationChart(stats);
@@ -1369,7 +1498,7 @@ function renderDelayExamples(examples) {
       <table>
         <thead><tr>
           <th>Mode</th><th>Period</th><th>Season</th>
-          <th>Rain (mm)</th><th>Temp (°C)</th><th>Wind (km/h)</th><th>Delay proxy</th>
+          <th>Rain (mm)</th><th>Temp (\u00B0C)</th><th>Wind (km/h)</th><th>Delay proxy</th>
         </tr></thead>
         <tbody>
           ${examples.map(e => `
@@ -1401,7 +1530,6 @@ function drawCorrelationChart(stats) {
     return m ? m.pearson_r : 0;
   });
 
-  // Horizontal bar chart for better readability
   chartCorrelation = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -1431,8 +1559,8 @@ function drawCorrelationChart(stats) {
             const strength = Math.abs(v) < 0.2 ? 'Weak effect' :
                              Math.abs(v) < 0.4 ? 'Moderate effect' :
                              Math.abs(v) < 0.6 ? 'Strong effect' : 'Very strong effect';
-            const dir = v > 0 ? '→ More delay when higher' :
-                        v < 0 ? '→ Less delay when higher' : '→ No effect';
+            const dir = v > 0 ? '\u2192 More delay when higher' :
+                        v < 0 ? '\u2192 Less delay when higher' : '\u2192 No effect';
             return `${strength} ${dir}`;
           }
         } }
@@ -1447,6 +1575,7 @@ function drawCorrelationChart(stats) {
   });
 }
 
+// ============ PIPELINE ============
 let pollInterval = null;
 
 async function runPipeline() {
@@ -1517,7 +1646,7 @@ async function pollStatus() {
           const summary = Object.entries(d)
             .slice(0, 2)
             .map(([, v]) => Array.isArray(v) ? `${v.length} features` : v)
-            .join(' · ');
+            .join(' \u00B7 ');
           document.getElementById(`step-${idx}-detail`).textContent = summary || 'Done';
         }
       });
@@ -1533,13 +1662,13 @@ async function pollStatus() {
       });
     }
 
-    // Refresh historical data after pipeline completes
     if (s.status === 'complete') {
       setTimeout(() => loadHistorical(), 500);
     }
   }
 }
 
+// ============ FEATURES ============
 async function loadFeatures() {
   const r = await fetch('/api/features/sample');
   if (!r.ok) {
@@ -1575,34 +1704,40 @@ function renderFeatureTable(wrapId, data, sectionId) {
 }
 
 function formatCell(v) {
-  if (v == null) return '<span style="color:#64748b">—</span>';
+  if (v == null) return '<span style="color:#64748b">\u2014</span>';
   if (typeof v === 'number') {
     if (Number.isInteger(v)) return v.toLocaleString();
     return v.toFixed(2);
   }
-  if (typeof v === 'boolean') return v ? '✓' : '—';
+  if (typeof v === 'boolean') return v ? '\u2713' : '\u2014';
   return escapeHtml(String(v));
 }
 
+// ============ DATABASE TAB ============
 async function loadDbLive() {
   try {
-    const r = await fetch('/api/live?area=' + encodeURIComponent(selectedArea));
-    const d = await r.json();
-    // Weather live snapshot
+    // Use the cached live data if available, otherwise fetch fresh
+    let d = liveCache;
+    if (!d) {
+      const r = await fetch('/api/live');
+      d = await r.json();
+    }
+    // Weather live snapshot for selected area
     const wEl = document.getElementById('dbWeatherLive');
-    const w = d.weather || {};
+    const areaData = (d.areas && d.areas[selectedArea]) ? d.areas[selectedArea] : null;
+    const w = areaData ? (areaData.weather || {}) : {};
     if (w.temp != null) {
       wEl.innerHTML = `<table>
         <thead><tr><th>Metric</th><th>Value</th></tr></thead>
         <tbody>
-          <tr><td>Temperature</td><td>${w.temp}°C</td></tr>
+          <tr><td>Temperature</td><td>${w.temp}\u00B0C</td></tr>
           <tr><td>Humidity</td><td>${w.humidity}%</td></tr>
           <tr><td>Rain</td><td>${(w.rain||0).toFixed(1)} mm</td></tr>
           <tr><td>Wind Speed</td><td>${(w.wind_speed||0).toFixed(1)} km/h</td></tr>
           <tr><td>Pressure</td><td>${Math.round(w.pressure||0)} hPa</td></tr>
           <tr><td>Condition</td><td>${escapeHtml(w.description)}</td></tr>
           <tr><td>Severity</td><td>${(w.severity||0).toFixed(1)}/10</td></tr>
-          <tr><td>Area</td><td>${escapeHtml(d.area?.name || selectedArea)}</td></tr>
+          <tr><td>Area</td><td>${escapeHtml(areaData ? areaData.name : selectedArea)}</td></tr>
         </tbody></table>`;
     }
     // Rail live snapshot
@@ -1637,7 +1772,7 @@ async function loadTables() {
   list.innerHTML = tables.map(t => `
     <div class="table-item" onclick="selectTable('${escapeHtml(t.name)}')">
       <div class="tname">${escapeHtml(t.name)}</div>
-      <div class="trows">${t.rows.toLocaleString()} rows · ${t.columns.length} cols</div>
+      <div class="trows">${t.rows.toLocaleString()} rows \u00B7 ${t.columns.length} cols</div>
     </div>
   `).join('');
 }
@@ -1678,6 +1813,7 @@ async function runQuery() {
   }
 }
 
+// ============ TESTS ============
 let lastTestResults = null;
 
 async function loadTestList() {
@@ -1695,12 +1831,10 @@ async function loadTestList() {
 
 function renderTestList(classes, results) {
   const list = document.getElementById('testList');
-  // Build lookup of test statuses (if we have results)
   const statusMap = {};
   if (results) {
     (results.failures || []).forEach(f => statusMap[f.test] = 'fail');
     (results.error_list || []).forEach(f => statusMap[f.test] = 'fail');
-    // Everything else is pass if we have results
   }
   list.innerHTML = classes.map(c => `
     <div class="test-class-card">
@@ -1715,7 +1849,7 @@ function renderTestList(classes, results) {
           if (results) {
             status = statusMap[key] === 'fail' ? 'fail' : 'pass';
           }
-          const icon = status === 'pass' ? '✓' : status === 'fail' ? '✗' : '•';
+          const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2717' : '\u2022';
           return `
             <div class="test-row">
               <div class="icon ${status}">${icon}</div>
@@ -1744,7 +1878,6 @@ async function runTests() {
     const pass = d.passed || 0;
     const total = d.total || 0;
     badge.innerHTML = `<span class="test-badge ${d.success ? 'pass' : 'fail'}">${pass}/${total} PASSED</span>`;
-    // Re-render test list with statuses
     loadTestList();
   } catch (e) {
     badge.innerHTML = `<span class="test-badge fail">Error</span>`;
@@ -1753,40 +1886,8 @@ async function runTests() {
   btn.textContent = 'Run All Tests';
 }
 
-// Map click handler
-document.getElementById('mapAreas').addEventListener('click', function(e) {
-  const rect = e.target.closest('[data-area]');
-  if (rect) {
-    const area = rect.getAttribute('data-area');
-    setArea(area);
-    updateMapHighlight(area);
-  }
-});
-
-function updateMapHighlight(active) {
-  document.querySelectorAll('#mapAreas rect').forEach(r => {
-    const area = r.getAttribute('data-area');
-    if (area === active) {
-      r.setAttribute('fill', '#16a34a');
-      r.setAttribute('stroke', '#166534');
-      r.nextElementSibling.setAttribute('fill', 'white');
-    } else {
-      r.setAttribute('fill', '#dcfce7');
-      r.setAttribute('stroke', '#16a34a');
-      r.nextElementSibling.setAttribute('fill', '#166534');
-    }
-  });
-}
-
-// Also update map when area buttons are clicked
-const origSetArea = setArea;
-setArea = function(code) {
-  origSetArea(code);
-  updateMapHighlight(code);
-};
-
-updateMapHighlight('D1');
-
+// ============ INIT ============
+updateMapWeather();
 loadAreas();
 refreshLive();
 liveInterval = setInterval(refreshLive, 60000);
@@ -1798,9 +1899,8 @@ setInterval(() => {
   if (countdownSec <= 0) countdownSec = 60;
   const el = document.getElementById('countdown');
   if (el) el.textContent = countdownSec + 's';
-  // Also update live clock
   const nowEl = document.getElementById('w-now');
-  if (nowEl && nowEl.textContent !== '—') {
+  if (nowEl && nowEl.textContent !== '\u2014') {
     nowEl.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   }
 }, 1000);
@@ -1811,5 +1911,6 @@ refreshLive = async function() { countdownSec = 60; return origRefresh(); };
 
 loadHistorical();
 </script>
+
 </body>
 </html>
