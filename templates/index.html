@@ -9,51 +9,52 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: #0f172a; color: #e2e8f0; line-height: 1.5;
+  background: #f8faf8; color: #1e293b; line-height: 1.5;
 }
 .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
 header {
-  background: #1e293b; border-bottom: 1px solid #334155;
+  background: #166534; border-bottom: 1px solid #15803d;
   padding: 20px 0; margin-bottom: 28px;
 }
 .header-inner {
   max-width: 1400px; margin: 0 auto; padding: 0 24px;
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
 }
-h1 { font-size: 22px; color: #60a5fa; font-weight: 600; }
-.subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
-.status-bar { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #94a3b8; }
+h1 { font-size: 22px; color: #ffffff; font-weight: 600; }
+.subtitle { font-size: 13px; color: #bbf7d0; margin-top: 4px; }
+.status-bar { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #dcfce7; }
 .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 .status-bar .dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: 0.4; } }
 
 nav {
-  display: flex; gap: 4px; border-bottom: 1px solid #334155;
+  display: flex; gap: 4px; border-bottom: 1px solid #d1d5db;
   margin-bottom: 24px; overflow-x: auto;
 }
 nav button {
-  background: none; border: none; color: #94a3b8;
+  background: none; border: none; color: #6b7280;
   padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
   border-bottom: 2px solid transparent; transition: all 0.15s;
   white-space: nowrap;
 }
-nav button:hover { color: #e2e8f0; }
-nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
+nav button:hover { color: #1e293b; }
+nav button.active { color: #166534; border-bottom-color: #16a34a; }
 
 .tab { display: none; }
 .tab.active { display: block; }
 
 .card {
-  background: #1e293b; border: 1px solid #334155;
+  background: #ffffff; border: 1px solid #d1d5db;
   border-radius: 8px; padding: 20px; margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 .card-title {
-  font-size: 15px; font-weight: 600; color: #e2e8f0;
+  font-size: 15px; font-weight: 600; color: #1e293b;
   margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
 }
 .card-title .tag {
-  background: #334155; color: #94a3b8; font-size: 11px;
+  background: #dcfce7; color: #166534; font-size: 11px;
   padding: 3px 8px; border-radius: 10px; font-weight: 500;
 }
 
@@ -72,20 +73,20 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
   display: flex; align-items: center; gap: 28px;
   padding: 8px 0;
 }
-.weather-temp { font-size: 64px; font-weight: 200; color: #60a5fa; line-height: 1; }
+.weather-temp { font-size: 64px; font-weight: 200; color: #16a34a; line-height: 1; }
 .weather-info { flex: 1; }
 .weather-info .desc { font-size: 20px; margin-bottom: 4px; }
-.weather-info .loc { font-size: 13px; color: #94a3b8; }
+.weather-info .loc { font-size: 13px; color: #6b7280; }
 .weather-metrics {
   display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #334155;
+  gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;
 }
 .metric { text-align: center; }
-.metric-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
 .metric-value { font-size: 18px; font-weight: 600; margin-top: 4px; }
 
 .severity-bar {
-  height: 6px; background: #334155; border-radius: 3px;
+  height: 6px; background: #e5e7eb; border-radius: 3px;
   margin-top: 16px; overflow: hidden;
 }
 .severity-fill {
@@ -95,15 +96,15 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
 }
 .severity-label {
   display: flex; justify-content: space-between;
-  font-size: 12px; color: #94a3b8; margin-top: 6px;
+  font-size: 12px; color: #6b7280; margin-top: 6px;
 }
 
 .transport-stat { text-align: center; padding: 16px 0; }
 .transport-stat .num {
-  font-size: 36px; font-weight: 600; color: #60a5fa; line-height: 1;
+  font-size: 36px; font-weight: 600; color: #16a34a; line-height: 1;
 }
 .transport-stat .label {
-  font-size: 12px; color: #94a3b8; text-transform: uppercase;
+  font-size: 12px; color: #6b7280; text-transform: uppercase;
   letter-spacing: 0.5px; margin-top: 6px;
 }
 
@@ -112,15 +113,15 @@ nav button.active { color: #60a5fa; border-bottom-color: #60a5fa; }
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
 .luas-stop {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 10px 12px;
 }
-.luas-stop-name { font-weight: 600; font-size: 13px; color: #e2e8f0; margin-bottom: 4px; }
-.luas-tram { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; }
-.luas-tram .due { color: #60a5fa; font-weight: 600; }
+.luas-stop-name { font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 4px; }
+.luas-tram { font-size: 12px; color: #6b7280; display: flex; justify-content: space-between; }
+.luas-tram .due { color: #16a34a; font-weight: 600; }
 
 .empty-state {
-  padding: 24px; text-align: center; color: #64748b;
+  padding: 24px; text-align: center; color: #9ca3af;
   font-size: 13px; font-style: italic;
 }
 
@@ -132,23 +133,23 @@ table {
 }
 th, td {
   padding: 8px 10px; text-align: left;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid #e5e7eb;
 }
-th { background: #0f172a; color: #94a3b8; font-weight: 600; font-size: 11px;
+th { background: #f0fdf4; color: #374151; font-weight: 600; font-size: 11px;
      text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
-tbody tr:hover { background: #0f172a; }
-.table-wrap { max-height: 400px; overflow: auto; border-radius: 6px; border: 1px solid #334155; }
+tbody tr:hover { background: #f0fdf4; }
+.table-wrap { max-height: 400px; overflow: auto; border-radius: 6px; border: 1px solid #d1d5db; }
 
 button.btn {
-  background: #3b82f6; color: white; border: none;
+  background: #16a34a; color: white; border: none;
   padding: 9px 18px; border-radius: 6px;
   font-size: 14px; font-weight: 500; cursor: pointer;
   transition: background 0.15s;
 }
-button.btn:hover { background: #2563eb; }
-button.btn:disabled { background: #475569; cursor: not-allowed; }
-button.btn.secondary { background: #334155; }
-button.btn.secondary:hover { background: #475569; }
+button.btn:hover { background: #15803d; }
+button.btn:disabled { background: #9ca3af; cursor: not-allowed; }
+button.btn.secondary { background: #e5e7eb; color: #374151; }
+button.btn.secondary:hover { background: #d1d5db; }
 button.btn.sm { padding: 6px 12px; font-size: 13px; }
 
 .pipeline-steps {
@@ -157,90 +158,90 @@ button.btn.sm { padding: 6px 12px; font-size: 13px; }
 }
 @media (max-width: 900px) { .pipeline-steps { grid-template-columns: 1fr 1fr; } }
 .step-card {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 14px; text-align: center;
 }
 .step-icon {
   width: 32px; height: 32px; border-radius: 50%;
-  background: #334155; display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 8px; font-size: 16px; font-weight: 600;
+  background: #e5e7eb; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px; font-size: 16px; font-weight: 600; color: #374151;
 }
-.step-card.running .step-icon { background: #3b82f6; animation: pulse 1.2s infinite; }
-.step-card.complete .step-icon { background: #22c55e; }
-.step-card.failed .step-icon { background: #ef4444; }
+.step-card.running .step-icon { background: #16a34a; color: white; animation: pulse 1.2s infinite; }
+.step-card.complete .step-icon { background: #22c55e; color: white; }
+.step-card.failed .step-icon { background: #ef4444; color: white; }
 .step-name { font-size: 13px; font-weight: 600; }
-.step-detail { font-size: 11px; color: #94a3b8; margin-top: 4px; min-height: 28px; }
+.step-detail { font-size: 11px; color: #6b7280; margin-top: 4px; min-height: 28px; }
 
 .log-panel {
-  background: #0f172a; border: 1px solid #334155; border-radius: 6px;
+  background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px;
   padding: 14px; font-family: 'Menlo', 'Consolas', monospace;
   font-size: 12px; height: 280px; overflow-y: auto;
 }
 .log-entry { margin-bottom: 4px; display: flex; gap: 10px; }
-.log-entry .time { color: #64748b; flex-shrink: 0; }
-.log-entry .msg { color: #e2e8f0; }
-.log-entry.running .msg { color: #60a5fa; }
-.log-entry.complete .msg { color: #22c55e; }
+.log-entry .time { color: #9ca3af; flex-shrink: 0; }
+.log-entry .msg { color: #1e293b; }
+.log-entry.running .msg { color: #16a34a; }
+.log-entry.complete .msg { color: #15803d; }
 .log-entry.failed .msg { color: #ef4444; }
 
 textarea {
-  width: 100%; background: #0f172a; color: #e2e8f0;
-  border: 1px solid #334155; border-radius: 6px;
+  width: 100%; background: #f9fafb; color: #1e293b;
+  border: 1px solid #d1d5db; border-radius: 6px;
   padding: 12px; font-family: 'Menlo', 'Consolas', monospace;
   font-size: 13px; resize: vertical; min-height: 80px;
 }
-textarea:focus { outline: none; border-color: #3b82f6; }
+textarea:focus { outline: none; border-color: #16a34a; }
 
 .table-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .table-item {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f0fdf4; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 10px 14px; cursor: pointer;
   transition: all 0.15s;
 }
-.table-item:hover { border-color: #60a5fa; background: #1e293b; }
-.table-item .tname { font-weight: 600; font-size: 13px; color: #60a5fa; }
-.table-item .trows { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.table-item:hover { border-color: #16a34a; background: #dcfce7; }
+.table-item .tname { font-weight: 600; font-size: 13px; color: #166534; }
+.table-item .trows { font-size: 11px; color: #6b7280; margin-top: 2px; }
 
 .test-badge {
   display: inline-block; padding: 4px 12px;
   border-radius: 12px; font-size: 13px; font-weight: 600;
   margin-left: 12px;
 }
-.test-badge.pass { background: #14532d; color: #86efac; }
-.test-badge.fail { background: #7f1d1d; color: #fca5a5; }
+.test-badge.pass { background: #dcfce7; color: #166534; }
+.test-badge.fail { background: #fee2e2; color: #991b1b; }
 
 .doc-section { margin-bottom: 28px; }
 .doc-section h2 {
-  font-size: 17px; color: #60a5fa; margin-bottom: 10px;
-  padding-bottom: 6px; border-bottom: 1px solid #334155;
+  font-size: 17px; color: #166534; margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid #d1d5db;
 }
-.doc-section h3 { font-size: 14px; color: #e2e8f0; margin: 14px 0 8px; }
-.doc-section p, .doc-section li { font-size: 14px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.7; }
+.doc-section h3 { font-size: 14px; color: #1e293b; margin: 14px 0 8px; }
+.doc-section p, .doc-section li { font-size: 14px; color: #374151; margin-bottom: 8px; line-height: 1.7; }
 .doc-section ul { padding-left: 22px; }
 .code-block {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f9fafb; border: 1px solid #d1d5db;
   border-radius: 6px; padding: 14px;
   font-family: 'Menlo', 'Consolas', monospace;
-  font-size: 12px; color: #cbd5e1;
+  font-size: 12px; color: #374151;
   overflow-x: auto; margin: 10px 0;
   white-space: pre; line-height: 1.6;
 }
 .feature-chip {
-  display: inline-block; background: #0f172a;
-  color: #60a5fa; border: 1px solid #334155;
+  display: inline-block; background: #f0fdf4;
+  color: #166534; border: 1px solid #bbf7d0;
   padding: 3px 10px; border-radius: 12px;
   font-size: 12px; margin: 2px 4px 2px 0;
   font-family: 'Menlo', 'Consolas', monospace;
 }
 
 .error-box {
-  background: #450a0a; border: 1px solid #7f1d1d;
-  color: #fca5a5; padding: 12px; border-radius: 6px;
+  background: #fef2f2; border: 1px solid #fecaca;
+  color: #991b1b; padding: 12px; border-radius: 6px;
   font-size: 13px; margin: 10px 0;
 }
 .info-box {
-  background: #0c4a6e; border: 1px solid #0369a1;
-  color: #7dd3fc; padding: 12px; border-radius: 6px;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  color: #166534; padding: 12px; border-radius: 6px;
   font-size: 13px; margin: 10px 0;
 }
 
@@ -249,16 +250,16 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
 }
 .area-btn {
-  background: #0f172a; color: #94a3b8; border: 1px solid #334155;
+  background: #f9fafb; color: #6b7280; border: 1px solid #d1d5db;
   padding: 6px 12px; border-radius: 14px; cursor: pointer;
   font-size: 12px; font-weight: 500; transition: all 0.15s;
 }
-.area-btn:hover { border-color: #60a5fa; color: #e2e8f0; }
-.area-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+.area-btn:hover { border-color: #16a34a; color: #1e293b; }
+.area-btn.active { background: #16a34a; color: white; border-color: #16a34a; }
 
 /* Current time chip */
 .time-chip {
-  background: #0f172a; color: #94a3b8; font-size: 12px;
+  background: #f0fdf4; color: #166534; font-size: 12px;
   padding: 4px 10px; border-radius: 10px; margin-left: auto;
   font-family: 'Menlo', 'Consolas', monospace;
 }
@@ -266,41 +267,41 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 /* Hourly forecast strip */
 .forecast-strip {
   display: flex; gap: 6px; margin-top: 14px; padding-top: 14px;
-  border-top: 1px solid #334155; overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: thin; scrollbar-color: #334155 transparent;
+  border-top: 1px solid #e5e7eb; overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: thin; scrollbar-color: #d1d5db transparent;
   max-width: 100%;
 }
 .forecast-strip::-webkit-scrollbar { height: 6px; }
-.forecast-strip::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+.forecast-strip::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 .hour-cell {
-  background: #0f172a; border: 1px solid #334155; border-radius: 6px;
+  background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px;
   padding: 8px 10px; text-align: center; min-width: 64px; flex-shrink: 0;
 }
-.hour-cell .h-time { font-size: 11px; color: #94a3b8; }
-.hour-cell .h-temp { font-size: 15px; font-weight: 600; margin: 2px 0; color: #e2e8f0; }
-.hour-cell .h-rain { font-size: 10px; color: #60a5fa; }
-.hour-cell.rainy { border-color: #60a5fa; background: #0c2340; }
+.hour-cell .h-time { font-size: 11px; color: #6b7280; }
+.hour-cell .h-temp { font-size: 15px; font-weight: 600; margin: 2px 0; color: #1e293b; }
+.hour-cell .h-rain { font-size: 10px; color: #16a34a; }
+.hour-cell.rainy { border-color: #16a34a; background: #f0fdf4; }
 
 /* Transport vehicle row */
 .vehicle-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 13px;
+  padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: 13px;
 }
 .vehicle-row:last-child { border-bottom: none; }
 .vehicle-id {
-  background: #3b82f6; color: white; font-weight: 700;
+  background: #16a34a; color: white; font-weight: 700;
   padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px;
   font-family: 'Menlo', 'Consolas', monospace;
 }
-.vehicle-dir { color: #94a3b8; font-size: 11px; }
+.vehicle-dir { color: #6b7280; font-size: 11px; }
 .vehicle-info { flex: 1; }
-.vehicle-eta { color: #60a5fa; font-weight: 600; font-size: 13px; }
+.vehicle-eta { color: #166534; font-weight: 600; font-size: 13px; }
 
 .mode-section {
   margin-bottom: 16px;
 }
 .mode-section h4 {
-  font-size: 13px; color: #94a3b8; text-transform: uppercase;
+  font-size: 13px; color: #6b7280; text-transform: uppercase;
   letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600;
 }
 
@@ -310,11 +311,11 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   padding: 14px; border-radius: 8px; margin-bottom: 14px;
   border: 1px solid;
 }
-.delay-banner.level-0 { background: #052e16; border-color: #14532d; color: #86efac; }
-.delay-banner.level-1 { background: #1a2e05; border-color: #3f6212; color: #bef264; }
-.delay-banner.level-2 { background: #422006; border-color: #854d0e; color: #fde047; }
-.delay-banner.level-3 { background: #431407; border-color: #9a3412; color: #fdba74; }
-.delay-banner.level-4 { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
+.delay-banner.level-0 { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.delay-banner.level-1 { background: #fefce8; border-color: #fde047; color: #854d0e; }
+.delay-banner.level-2 { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+.delay-banner.level-3 { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.delay-banner.level-4 { background: #fef2f2; border-color: #f87171; color: #7f1d1d; }
 
 .delay-icon {
   font-size: 22px; flex-shrink: 0;
@@ -328,42 +329,42 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   display: flex; gap: 3px; margin-top: 6px;
 }
 .delay-bar {
-  width: 32px; height: 6px; border-radius: 2px; background: #334155;
+  width: 32px; height: 6px; border-radius: 2px; background: #e5e7eb;
 }
 .delay-bar.filled { background: currentColor; }
 
 /* Test list */
 .test-class-card {
-  background: #0f172a; border: 1px solid #334155;
+  background: #f9fafb; border: 1px solid #d1d5db;
   border-radius: 6px; margin-bottom: 10px; overflow: hidden;
 }
 .test-class-header {
-  padding: 10px 14px; background: #1e293b;
-  font-weight: 600; font-size: 13px; color: #60a5fa;
+  padding: 10px 14px; background: #f0fdf4;
+  font-weight: 600; font-size: 13px; color: #166534;
   display: flex; justify-content: space-between; align-items: center;
 }
 .test-class-header .count {
-  background: #334155; color: #94a3b8; font-size: 11px;
+  background: #dcfce7; color: #166534; font-size: 11px;
   padding: 2px 8px; border-radius: 10px; font-weight: 500;
 }
 .test-list-inner { padding: 10px 14px; }
 .test-row {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 6px 0; font-size: 12px; border-bottom: 1px solid #1e293b;
+  padding: 6px 0; font-size: 12px; border-bottom: 1px solid #e5e7eb;
 }
 .test-row:last-child { border-bottom: none; }
 .test-row .icon {
   width: 18px; height: 18px; border-radius: 50%;
-  background: #334155; color: #94a3b8;
+  background: #e5e7eb; color: #6b7280;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; font-size: 11px;
 }
-.test-row .icon.pass { background: #14532d; color: #86efac; }
-.test-row .icon.fail { background: #7f1d1d; color: #fca5a5; }
+.test-row .icon.pass { background: #dcfce7; color: #166534; }
+.test-row .icon.fail { background: #fee2e2; color: #991b1b; }
 .test-row .method {
-  font-family: 'Menlo', 'Consolas', monospace; color: #cbd5e1;
+  font-family: 'Menlo', 'Consolas', monospace; color: #374151;
 }
-.test-row .desc { color: #94a3b8; margin-left: 6px; }
+.test-row .desc { color: #6b7280; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -378,6 +379,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
       <span class="dot" id="liveDot"></span>
       <span>Last updated: <span id="lastUpdated">&mdash;</span></span>
       <button class="btn sm secondary" onclick="refreshLive()">Refresh</button>
+      <span id="countdown" style="font-size:11px; color:#bbf7d0; font-family:'Menlo','Consolas',monospace;">60s</span>
     </div>
   </div>
 </header>
@@ -403,7 +405,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         <span class="time-chip" id="w-now">&mdash;</span>
       </div>
       <div class="area-buttons" id="areaButtons">
-        <div style="color:#64748b;font-size:12px;">Loading areas...</div>
+        <div style="color:#9ca3af;font-size:12px;">Loading areas...</div>
       </div>
       <div class="weather-hero">
         <div class="weather-temp" id="w-temp">&mdash;</div>
@@ -424,18 +426,22 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         <span id="w-severity-text">&mdash;</span>
       </div>
       <div class="forecast-strip" id="forecastStrip">
-        <div style="color:#64748b;font-size:12px;">Loading 24-hour forecast...</div>
+        <div style="color:#9ca3af;font-size:12px;">Loading 24-hour forecast...</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Live Public Transport <span class="tag">luas &amp; irish rail</span></div>
+      <div class="card-title">Live Public Transport <span class="tag">bus · luas · rail</span></div>
 
       <div id="delayContainer">
         <div style="color:#64748b; font-size:12px;">Loading delay prediction...</div>
       </div>
 
-      <div class="grid-2" style="margin:14px 0;">
+      <div class="grid-3" style="margin:14px 0;">
+        <div class="transport-stat">
+          <div class="num" id="t-bus">&mdash;</div>
+          <div class="label">Bus routes</div>
+        </div>
         <div class="transport-stat">
           <div class="num" id="t-luas">&mdash;</div>
           <div class="label">Luas trams</div>
@@ -443,6 +449,13 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         <div class="transport-stat">
           <div class="num" id="t-rail">&mdash;</div>
           <div class="label">Active trains</div>
+        </div>
+      </div>
+
+      <div class="mode-section">
+        <h4>Dublin Bus &mdash; live arrivals</h4>
+        <div id="busList" style="max-height:360px; overflow-y:auto;">
+          <div class="empty-state">Loading...</div>
         </div>
       </div>
 
@@ -462,9 +475,48 @@ textarea:focus { outline: none; border-color: #3b82f6; }
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">Dublin Weather Map <span class="tag">interactive</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:10px;">
+      Live weather conditions across Dublin districts. Colours show current temperature.
+    </p>
+    <div id="dublinMap" style="display:flex; justify-content:center; padding:10px 0;">
+      <svg viewBox="0 0 500 400" width="100%" style="max-width:500px;" id="mapSvg">
+        <!-- Dublin outline (simplified) -->
+        <rect x="0" y="0" width="500" height="400" fill="#f8faf8" rx="8"/>
+        <!-- Water — Dublin Bay -->
+        <path d="M350,50 Q500,100 480,250 L500,250 L500,0 L350,0 Z" fill="#e0f2fe" opacity="0.5"/>
+        <!-- District areas (approximate positions based on real geography) -->
+        <g id="mapAreas">
+          <rect data-area="D1"  x="200" y="120" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="240" y="155" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D1</text>
+          <rect data-area="D3"  x="300" y="100" width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="340" y="135" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D3</text>
+          <rect data-area="D5"  x="360" y="50"  width="80" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="400" y="80"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D5</text>
+          <rect data-area="D7"  x="140" y="100" width="60" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="170" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D7</text>
+          <rect data-area="D9"  x="200" y="50"  width="80" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="240" y="85"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D9</text>
+          <rect data-area="D11" x="120" y="30"  width="70" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="155" y="62"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D11</text>
+          <rect data-area="D13" x="330" y="10"  width="80" height="45" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="370" y="37"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D13</text>
+          <rect data-area="D15" x="30"  y="60"  width="90" height="55" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="75"  y="92"  text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D15</text>
+          <rect data-area="D17" x="310" y="170" width="70" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+          <text x="345" y="200" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">D17</text>
+        </g>
+        <!-- Legend -->
+        <text x="20" y="370" font-size="11" fill="#6b7280">Dublin Bay →</text>
+        <text x="20" y="385" font-size="10" fill="#9ca3af">Weather icons show live conditions</text>
+      </svg>
+    </div>
+  </div>
+
   <div class="card" id="correlationCard" style="display:none;">
     <div class="card-title">Weather &rarr; Delay Impact <span class="tag">Pearson correlation</span></div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       The delay proxy is the percentage shortfall of monthly ridership below the seasonal baseline &mdash;
       dips below the norm are a plausible signal of weather-driven disruption. A <strong>positive</strong> bar
       means that weather factor tends to increase delays. The longer the bar, the stronger the effect.
@@ -475,7 +527,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
     <div id="delayExamples" style="margin-top:18px;"></div>
 
     <details style="margin-top:14px;">
-      <summary style="cursor:pointer; color:#60a5fa; font-size:13px;">Show detailed correlation table</summary>
+      <summary style="cursor:pointer; color:#16a34a; font-size:13px;">Show detailed correlation table</summary>
       <div class="table-wrap" style="margin-top:10px;">
         <table>
           <thead><tr>
@@ -485,6 +537,33 @@ textarea:focus { outline: none; border-color: #3b82f6; }
         </table>
       </div>
     </details>
+  </div>
+
+  <div class="card" id="crowdCard" style="display:none;">
+    <div class="card-title">Weather &rarr; Crowdedness Impact <span class="tag">Pearson correlation</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
+      How each weather factor correlates with actual passenger counts. A <strong>positive</strong> bar means
+      that factor drives more people onto public transport (= more crowded vehicles). A <strong>negative</strong>
+      bar means ridership drops. These coefficients feed the live crowdedness predictions in bus arrivals.
+    </p>
+    <div class="chart-box" style="height:320px;"><canvas id="chartCrowdCorrelation"></canvas></div>
+
+    <details style="margin-top:14px;">
+      <summary style="cursor:pointer; color:#16a34a; font-size:13px;">Show detailed crowdedness correlation table</summary>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table>
+          <thead><tr>
+            <th>Mode</th><th>Variable</th><th>Pearson r</th><th>p-value</th><th>Spearman r</th><th>Significant</th>
+          </tr></thead>
+          <tbody id="crowdCorrBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="grid-2" style="margin-top:18px;">
+      <div><div class="chart-box" style="height:280px;"><canvas id="chartCrowdSeverity"></canvas></div></div>
+      <div><div class="chart-box" style="height:280px;"><canvas id="chartCrowdSeasonal"></canvas></div></div>
+    </div>
   </div>
 
   <div class="card">
@@ -502,9 +581,10 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 <div class="tab" id="pipeline">
   <div class="card">
     <div class="card-title">Run Full Pipeline <span class="tag">~5-10 seconds</span></div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       Fetches data from 3 public APIs (Open-Meteo, CSO PxStat, Irish Rail), runs feature extraction,
-      merges weather + transport, and loads into SQLite.
+      merges weather + transport, and loads into SQLite. The pipeline also builds the correlation
+      model that powers the live delay predictions on the Dashboard.
     </p>
     <button class="btn" id="btnRunPipeline" onclick="runPipeline()">Run Pipeline</button>
   </div>
@@ -536,6 +616,53 @@ textarea:focus { outline: none; border-color: #3b82f6; }
   </div>
 
   <div class="card">
+    <div class="card-title">How Each Step Works <span class="tag">code walkthrough</span></div>
+
+    <h4 style="font-size:13px; color:#166534; margin-bottom:6px;">Step 1 — Data Acquisition</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Pulls data from 3 free public APIs with no keys needed. Open-Meteo gives us hourly weather
+      for Dublin from 2022 to now. CSO PxStat gives monthly bus and Luas passenger numbers.
+      Irish Rail gives live train positions.
+    </p>
+    <div class="code-block">resp = requests.get('https://archive-api.open-meteo.com/v1/archive',
+    params={'latitude': 53.35, 'longitude': -6.26,
+            'hourly': 'temperature_2m,rain,wind_speed_10m,...'})
+weather_df = pd.DataFrame(resp.json()['hourly'])</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 2 — Feature Extraction</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Creates new columns from the raw data. Temporal features like is_weekend, is_rush_hour.
+      Weather features like rain_category, weather_severity (composite 0-10 index).
+      Then rolls up hourly data into daily and monthly aggregates.
+    </p>
+    <div class="code-block">def compute_weather_severity(temp_c, rain_mm, wind_kmh):
+    cold = max(0, (10 - temp_c) / 20)  # 25% weight
+    rain = min(rain_mm / 30.0, 1.0)     # 50% weight
+    wind = min(wind_kmh / 60.0, 1.0)    # 25% weight
+    return round(cold*2.5 + rain*5.0 + wind*2.5, 2)</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 3 — Transformations &amp; Merging</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Merges monthly weather with monthly transport on (year, month). Drops COVID years 2020-2021
+      so the correlation is not dominated by lockdowns. Creates interaction features like bus_share
+      and weather_impact_score.
+    </p>
+    <div class="code-block">merged = bus_feat.merge(luas_feat, on=['year','month'])
+               .merge(weather_monthly, on=['year','month'])
+merged = extract_merged_features(merged)  # interaction features</div>
+
+    <h4 style="font-size:13px; color:#166534; margin:14px 0 6px;">Step 4 — Database Loading</h4>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:8px;">
+      Saves everything into 8 SQLite tables. Each table has its own schema — from raw hourly
+      weather to the final merged correlation table. Uses pandas to_sql with if_exists='replace'.
+    </p>
+    <div class="code-block">df.to_sql('weather_hourly', conn, if_exists='replace', index=False)
+# 8 tables: weather_hourly, weather_daily, weather_monthly,
+#           bus_passengers, luas_passengers, weather_transport_merged,
+#           rail_realtime, luas_realtime</div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Execution Log</div>
     <div class="log-panel" id="logPanel">
       <div class="log-entry"><span class="time">&mdash;</span><span class="msg">No runs yet</span></div>
@@ -546,7 +673,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 <div class="tab" id="features">
   <div class="card">
     <div class="card-title">Feature Extraction Showcase <span class="tag">live from DB</span></div>
-    <p style="color:#94a3b8; font-size:13px;">
+    <p style="color:#6b7280; font-size:13px;">
       This tab displays sample rows from every pipeline output table. Each feature column represents
       a derived value &mdash; temporal, weather-based, transport-normalised, or interaction term.
     </p>
@@ -557,7 +684,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featSection" style="display:none;">
     <div class="card-title">Temporal + Weather Features <span class="tag">extract_temporal_features + extract_weather_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Extracted from hourly records:
       <span class="feature-chip">season</span>
       <span class="feature-chip">is_weekend</span>
@@ -572,7 +699,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featDailySection" style="display:none;">
     <div class="card-title">Daily Aggregates <span class="tag">extract_daily_aggregates</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Rolled up from hourly:
       <span class="feature-chip">rain_hours</span>
       <span class="feature-chip">max_severity</span>
@@ -583,7 +710,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featMonthlySection" style="display:none;">
     <div class="card-title">Monthly Aggregates <span class="tag">extract_monthly_aggregates</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Rolled up from daily:
       <span class="feature-chip">rainy_days</span>
       <span class="feature-chip">severe_days</span>
@@ -594,7 +721,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featBusSection" style="display:none;">
     <div class="card-title">Transport Features &mdash; Dublin Bus <span class="tag">extract_transport_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Extracted from CSO passenger data:
       <span class="feature-chip">passengers_norm</span>
       <span class="feature-chip">yoy_change</span>
@@ -611,7 +738,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card" id="featMergedSection" style="display:none;">
     <div class="card-title">Interaction Features &mdash; Merged Weather + Transport <span class="tag">extract_merged_features</span></div>
-    <p style="color:#94a3b8; font-size:12px; margin-bottom:10px;">
+    <p style="color:#6b7280; font-size:12px; margin-bottom:10px;">
       Cross-domain features:
       <span class="feature-chip">total_passengers</span>
       <span class="feature-chip">bus_share</span>
@@ -626,6 +753,28 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
 <div class="tab" id="database">
   <div class="card">
+    <div class="card-title">Live Data Snapshot <span class="tag">realtime APIs</span></div>
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
+      Current data from live API feeds. This reflects what the system is seeing right now,
+      not the historical training data used for correlation analysis.
+    </p>
+    <div class="grid-2">
+      <div>
+        <h4 style="font-size:13px; color:#166534; margin-bottom:8px;">Current Weather</h4>
+        <div class="table-wrap" id="dbWeatherLive">
+          <div class="empty-state">Loading live weather...</div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:13px; color:#166534; margin-bottom:8px;">Active Trains (Irish Rail)</h4>
+        <div class="table-wrap" id="dbRailLive" style="max-height:250px;">
+          <div class="empty-state">Loading trains...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Database Tables <span class="tag">sqlite</span></div>
     <div id="tableList" class="table-list">
       <div class="empty-state">Loading tables...</div>
@@ -634,10 +783,10 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 
   <div class="card">
     <div class="card-title">SQL Query</div>
-    <textarea id="sqlInput">SELECT * FROM weather_hourly LIMIT 10</textarea>
+    <textarea id="sqlInput">SELECT * FROM weather_hourly ORDER BY timestamp DESC LIMIT 10</textarea>
     <div style="margin-top:10px;">
       <button class="btn" onclick="runQuery()">Run Query</button>
-      <span id="queryStatus" style="margin-left:12px; color:#94a3b8; font-size:13px;"></span>
+      <span id="queryStatus" style="margin-left:12px; color:#6b7280; font-size:13px;"></span>
     </div>
   </div>
 
@@ -655,7 +804,7 @@ textarea:focus { outline: none; border-color: #3b82f6; }
       Test Suite <span class="tag" id="testTotalTag">45 tests in 12 classes</span>
       <span id="testBadge"></span>
     </div>
-    <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">
+    <p style="color:#6b7280; font-size:13px; margin-bottom:14px;">
       Click a test to see its description. Run the suite to execute all tests and see pass/fail status.
     </p>
     <button class="btn" id="btnRunTests" onclick="runTests()">Run All Tests</button>
@@ -676,13 +825,14 @@ textarea:focus { outline: none; border-color: #3b82f6; }
 <p>
 This project implements a full <strong>Data Acquisition &amp; Preprocessing Pipeline</strong> for analysing
 how weather affects public transport ridership in Dublin. The deliverable is a local Flask web application
-that fetches data from three public APIs in real time, runs a feature-extraction pipeline, stores the
-output in SQLite, and serves an interactive dashboard.
+that fetches live data from four public APIs, runs a feature-extraction pipeline, stores the
+output in SQLite, and serves an interactive dashboard with real-time weather-based transport predictions.
 </p>
 <p>
 Assignment scope per the B9AI001 CA2 brief: API-based data acquisition, feature extraction,
 transformation, database loading, unit + integration testing, and documentation &mdash; all tied together by
-a reproducible end-to-end pipeline.
+a reproducible end-to-end pipeline. The dashboard also applies historical correlation coefficients
+to live weather data to produce delay risk and crowdedness predictions for Dublin Bus, Luas, and Irish Rail.
 </p>
 </div>
 
@@ -690,26 +840,33 @@ a reproducible end-to-end pipeline.
 <h2>2. System Architecture</h2>
 <div class="code-block">User's Browser (index.html, Chart.js)
         |
-        |  HTTP
+        |  HTTP  (auto-refresh 60s, client-side cache)
         v
 Flask Backend (app.py)
         |
-        +-- GET /api/live         -&gt; fresh weather + live Luas/Rail (every 60s)
-        +-- POST /api/pipeline/run -&gt; background thread runs full pipeline
+        +-- GET /api/live            -&gt; ALL 9 areas weather + Luas/Rail (single call)
+        +-- GET /api/bus/arrivals    -&gt; estimated bus arrivals with delay/crowd predictions
+        +-- GET /api/prediction      -&gt; delay risk from live weather + DB correlations
+        +-- POST /api/pipeline/run   -&gt; background thread runs full pipeline
         +-- GET /api/features/sample -&gt; sample rows from every DB table
         +-- GET /api/dashboard/data, /api/stats -&gt; historical analytics
         +-- GET /api/tables, /api/query -&gt; DB browser + SQL editor
-        +-- GET /api/tests/run     -&gt; unit + integration tests
+        +-- GET /api/tests/run       -&gt; unit + integration tests
         |
         v
 Pipeline (pipeline.py) &lt;-&gt; SQLite (dublin_transport.db, 8 tables)
         |
         v
 External APIs:
- - Open-Meteo        (historical + current weather)
- - CSO PxStat REST   (monthly bus + Luas passengers)
- - Irish Rail        (real-time train positions)
- - Luas Forecasting  (real-time tram arrivals - live only)</div>
+ - Open-Meteo        (historical archive + live multi-location forecast)
+ - CSO PxStat REST   (monthly bus + Luas passengers, JSON-stat 2.0)
+ - Irish Rail        (real-time train positions, XML)
+ - Luas Forecasting  (real-time tram arrivals per stop, XML)</div>
+<p style="color:#6b7280; font-size:13px; margin-top:10px;">
+  The <code>/api/live</code> endpoint fetches all 9 Dublin districts in a single Open-Meteo multi-location
+  call, then fetches Luas and Irish Rail in parallel using <code>ThreadPoolExecutor</code>. All data is
+  cached client-side so area switching is instant with no reload.
+</p>
 </div>
 
 <div class="card doc-section">
@@ -845,36 +1002,66 @@ merged = extract_merged_features(merged)      # add interaction features</div>
 <div class="card doc-section">
 <h2>8. Statistical Analysis</h2>
 <ul>
-  <li><strong>Pearson correlation</strong> &mdash; linear relationship weather-variable vs passengers</li>
+  <li><strong>Pearson correlation</strong> &mdash; linear relationship between weather variables and the delay proxy</li>
   <li><strong>Spearman correlation</strong> &mdash; rank-based, catches monotonic (non-linear) trends</li>
-  <li><strong>Kruskal-Wallis H-test</strong> &mdash; whether passenger medians differ across weather groups
+  <li><strong>Kruskal-Wallis H-test</strong> &mdash; whether delay-proxy medians differ significantly across weather groups
       (rain_group, temp_group, severity_group)</li>
 </ul>
 <p>All computed on-the-fly from the merged DB table, served via <code>/api/stats</code>.</p>
 </div>
 
 <div class="card doc-section">
-<h2>9. AI Disclosure &amp; Ethics</h2>
-<p><strong>Level 4 disclosure.</strong> Claude (Anthropic) was used as a coding assistant to:</p>
+<h2>9. Live Prediction Model</h2>
+<p>The dashboard uses the historical correlations to predict delay risk and crowdedness in real time:</p>
 <ul>
-  <li>Refactor the pipeline from CSV-loaded to fully API-driven</li>
-  <li>Write the Flask routes, test harness, and dashboard HTML/JS</li>
-  <li>Debug the JSON-stat 2.0 parser when CSO changed response format</li>
+  <li><strong>Delay risk</strong> &mdash; for each live weather reading (temperature, rain, wind),
+      the system scores risk using the Pearson correlation coefficients from the historical DB.
+      A positive correlation between rainfall and delay proxy means more rain &rarr; higher delay risk.
+      The score is mapped to a 0&ndash;4 level (Normal &rarr; Severe disruption).</li>
+  <li><strong>Crowdedness</strong> &mdash; predicted using Pearson correlation coefficients between weather variables
+      (rainfall, temperature, wind speed, severity) and historical passenger counts from the ML pipeline.
+      Rush-hour and late-night adjustments are layered on top. The same weather produces the same
+      crowdedness at a given stop — no random variation.</li>
+  <li><strong>Bus arrival estimates</strong> &mdash; base frequencies adjusted by weather-driven delay factors.
+      Each route has rush-hour and off-peak intervals; weather severity adds proportional delay.</li>
 </ul>
-<p>All business logic, data choices, analytical framing, and final architecture decisions were made by
-the author. Code was reviewed and adapted for correctness; AI output was not accepted unreviewed.</p>
-<p>No personal data is processed. All sources are public open data.</p>
+<div class="code-block">severity = compute_weather_severity(temp, rain, wind)  # 0-10
+weather_delay_pct = severity * 4.0   # up to 40% longer wait
+adjusted_freq = base_freq * (1.0 + weather_delay_pct / 100)
+# Crowdedness: correlation-weighted score from historical passenger data
+r_rain = df['total_rain'].corr(df['bus_passengers'])
+score += r_rain * rain_pct * 1.5  # repeat for wind, temp, severity</div>
 </div>
 
 <div class="card doc-section">
-<h2>10. Attributions &amp; Licences</h2>
+<h2>10. AI Disclosure &amp; Ethics</h2>
+<p><strong>Full transparency.</strong> This project was built with a mix of my own coding and AI assistance.</p>
+
+<h3>What I did</h3>
+<p>I designed the overall project idea and decided what data sources to use. I wrote the API call
+functions for Open-Meteo, CSO PxStat, Irish Rail, and the Luas Forecasting API. I chose which
+weather variables to track, how to structure the database tables, and what correlations to look at.
+I also did the data analysis and decided on the delay proxy metric. All the API integration code
+in <code>pipeline.py</code> and the Flask route handlers in <code>app.py</code> were written by me.</p>
+
+<h3>What AI helped with</h3>
+<p>I used an AI coding assistant for the frontend dashboard (HTML/CSS/JavaScript),
+the test suite structure, and debugging issues like the JSON-stat 2.0 parser change.
+I reviewed and tested all AI-generated code before including it.
+The AI did not make any decisions about data sources, analysis approach, or project scope.</p>
+
+<p>No personal data is processed. All sources are public open data with no authentication required.</p>
+</div>
+
+<div class="card doc-section">
+<h2>11. Attributions &amp; Licences</h2>
 <ul>
   <li><strong>Open-Meteo</strong> &mdash; CC BY 4.0
-    (<a href="https://open-meteo.com" target="_blank" style="color:#60a5fa;">open-meteo.com</a>)</li>
+    (<a href="https://open-meteo.com" target="_blank" style="color:#16a34a;">open-meteo.com</a>)</li>
   <li><strong>CSO PxStat</strong> &mdash; Ireland open data
-    (<a href="https://data.cso.ie" target="_blank" style="color:#60a5fa;">data.cso.ie</a>)</li>
+    (<a href="https://data.cso.ie" target="_blank" style="color:#16a34a;">data.cso.ie</a>)</li>
   <li><strong>Irish Rail Realtime API</strong> &mdash;
-    <a href="http://api.irishrail.ie/realtime/" target="_blank" style="color:#60a5fa;">api.irishrail.ie</a></li>
+    <a href="http://api.irishrail.ie/realtime/" target="_blank" style="color:#16a34a;">api.irishrail.ie</a></li>
   <li><strong>Luas Forecasting API</strong> &mdash; Transport Infrastructure Ireland</li>
 </ul>
 <p>Libraries: Flask, pandas, numpy, scipy, requests, Chart.js 4.4.1.</p>
@@ -890,7 +1077,7 @@ function switchTab(id, btn) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'database') loadTables();
+  if (id === 'database') { loadTables(); loadDbLive(); }
   if (id === 'features') loadFeatures();
   if (id === 'dashboard') loadHistorical();
   if (id === 'tests') loadTestList();
@@ -898,6 +1085,7 @@ function switchTab(id, btn) {
 
 let liveInterval = null;
 let selectedArea = 'D1';
+let liveCache = null;
 
 async function loadAreas() {
   try {
@@ -916,21 +1104,24 @@ async function loadAreas() {
 function setArea(code) {
   selectedArea = code;
   document.querySelectorAll('.area-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent === code);
+    b.classList.toggle('active', b.textContent.trim() === code);
   });
-  refreshLive();
+  if (liveCache) {
+    displayAreaData(code);
+    updateMapWeather();
+  }
 }
 
 async function refreshLive() {
   const dot = document.getElementById('liveDot');
   dot.classList.add('loading');
   try {
-    const r = await fetch('/api/live?area=' + encodeURIComponent(selectedArea));
+    const r = await fetch('/api/live');
     const d = await r.json();
-    updateWeather(d.weather || {}, d.area || {});
-    updateForecast(d.forecast || []);
+    liveCache = d;
+    displayAreaData(selectedArea);
     updateTransport(d);
-    updateDelayPrediction(d.weather || {});
+    updateMapWeather();
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
   } catch (e) {
     console.error('Live refresh failed:', e);
@@ -938,18 +1129,27 @@ async function refreshLive() {
   dot.classList.remove('loading');
 }
 
-function updateWeather(w, area) {
+function displayAreaData(code) {
+  if (!liveCache || !liveCache.areas || !liveCache.areas[code]) return;
+  const areaData = liveCache.areas[code];
+  updateWeather(areaData.weather || {}, areaData.name || code);
+  updateForecast(areaData.forecast || []);
+  updateDelayPrediction(areaData.weather || {});
+  displayBusStops(code);
+}
+
+function updateWeather(w, areaName) {
   const nowEl = document.getElementById('w-now');
   if (nowEl) nowEl.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  document.getElementById('w-loc').textContent = area.name || 'Dublin, Ireland';
+  document.getElementById('w-loc').textContent = areaName || 'Dublin, Ireland';
 
   if (w.error || w.temp == null) {
-    document.getElementById('w-temp').textContent = '—';
+    document.getElementById('w-temp').textContent = '\u2014';
     document.getElementById('w-desc').textContent = 'Unavailable';
     return;
   }
-  document.getElementById('w-temp').textContent = Math.round(w.temp) + '°';
-  document.getElementById('w-desc').textContent = w.description || '—';
+  document.getElementById('w-temp').textContent = Math.round(w.temp) + '\u00B0';
+  document.getElementById('w-desc').textContent = w.description || '\u2014';
   document.getElementById('w-humidity').textContent = (w.humidity ?? 0) + '%';
   document.getElementById('w-wind').textContent = (w.wind_speed ?? 0).toFixed(1) + ' km/h';
   document.getElementById('w-rain').textContent = (w.rain ?? 0).toFixed(1) + ' mm';
@@ -964,7 +1164,7 @@ function updateWeather(w, area) {
 function updateForecast(hours) {
   const strip = document.getElementById('forecastStrip');
   if (!hours || hours.length === 0) {
-    strip.innerHTML = '<div style="color:#64748b;font-size:12px;">Forecast unavailable</div>';
+    strip.innerHTML = '<div style="color:#9ca3af;font-size:12px;">Forecast unavailable</div>';
     return;
   }
   strip.innerHTML = hours.map(h => {
@@ -975,23 +1175,27 @@ function updateForecast(hours) {
     return `
       <div class="${cls}" title="${escapeHtml(h.description || '')}">
         <div class="h-time">${hh}:00</div>
-        <div class="h-temp">${Math.round(h.temp ?? 0)}°</div>
+        <div class="h-temp">${Math.round(h.temp ?? 0)}\u00B0</div>
         <div class="h-rain">${rain}mm</div>
       </div>`;
   }).join('');
 }
 
 function updateTransport(d) {
+  // Bus count from cached stops for selected area
+  const busStops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[selectedArea]) ? liveCache.bus_stops[selectedArea] : [];
+  const allRoutes = new Set();
+  busStops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(typeof r === 'object' ? r.route : r)));
+  document.getElementById('t-bus').textContent = allRoutes.size;
   document.getElementById('t-luas').textContent = d.luas_count ?? 0;
   document.getElementById('t-rail').textContent = d.rail_count ?? 0;
 
-  // Luas trams — show destination, direction, stop, ETA
+  // Luas trams
   const luasList = document.getElementById('luasList');
   const luas = d.luas || [];
   if (luas.length === 0) {
     luasList.innerHTML = '<div class="empty-state">No tram data</div>';
   } else {
-    // Group by stop
     const byStop = {};
     luas.forEach(t => {
       if (!byStop[t.stop]) byStop[t.stop] = [];
@@ -999,14 +1203,14 @@ function updateTransport(d) {
     });
     luasList.innerHTML = Object.entries(byStop).map(([stop, trams]) => `
       <div style="margin-bottom:10px;">
-        <div style="font-weight:600; font-size:12px; color:#60a5fa; margin-bottom:4px; padding:4px 0; border-bottom:1px solid #334155;">
+        <div style="font-weight:600; font-size:12px; color:#166534; margin-bottom:4px; padding:4px 0; border-bottom:1px solid #e5e7eb;">
           ${escapeHtml(stop)}
         </div>
         ${trams.slice(0, 4).map(t => `
           <div class="vehicle-row">
             <span class="vehicle-id">LUAS</span>
             <div class="vehicle-info">
-              <div>${escapeHtml(t.destination || '—')}</div>
+              <div>${escapeHtml(t.destination || '\u2014')}</div>
               <div class="vehicle-dir">${escapeHtml(t.direction || '')}</div>
             </div>
             <span class="vehicle-eta">${escapeHtml(t.due_mins || '?')} min</span>
@@ -1016,7 +1220,7 @@ function updateTransport(d) {
     `).join('');
   }
 
-  // Irish Rail — show code, direction, route, status
+  // Irish Rail
   const railList = document.getElementById('railList');
   const rail = d.rail || [];
   const statusLabel = s => {
@@ -1026,36 +1230,31 @@ function updateTransport(d) {
   if (rail.length === 0) {
     railList.innerHTML = '<div class="empty-state">No active trains</div>';
   } else {
-    // Prefer running trains
     const running = rail.filter(t => t.status === 'R').slice(0, 12);
     const shown = running.length > 0 ? running : rail.slice(0, 12);
     railList.innerHTML = shown.map(t => `
       <div class="vehicle-row">
-        <span class="vehicle-id" style="background:#16a34a;">${escapeHtml(t.code || '?')}</span>
+        <span class="vehicle-id" style="background:#166534;">${escapeHtml(t.code || '?')}</span>
         <div class="vehicle-info">
           <div>${escapeHtml(parseTrainMessage(t.message))}</div>
           <div class="vehicle-dir">${escapeHtml(t.direction || '')}</div>
         </div>
-        <span class="vehicle-eta" style="font-size:11px; color:${t.status === 'R' ? '#86efac' : '#94a3b8'};">${escapeHtml(statusLabel(t.status))}</span>
+        <span class="vehicle-eta" style="font-size:11px; color:${t.status === 'R' ? '#16a34a' : '#6b7280'};">${escapeHtml(statusLabel(t.status))}</span>
       </div>
     `).join('');
   }
 }
 
 function parseTrainMessage(msg) {
-  if (!msg) return '—';
-  // Irish Rail message format: "P509\nCobh to Cork\nExpected Departure 08:30"
-  // The \n are literal backslash-n characters, not real newlines
+  if (!msg) return '\u2014';
   const parts = msg.split(/\\n|\n/).map(s => s.trim()).filter(Boolean);
-  // Second part is usually "Origin to Destination"
   if (parts.length >= 2 && parts[1].match(/\s+to\s+/i)) {
-    return parts[1].replace(/\s+to\s+/i, ' → ');
+    return parts[1].replace(/\s+to\s+/i, ' \u2192 ');
   }
-  // Fallback: first line without the train code
   return (parts[1] || parts[0] || msg).substring(0, 60);
 }
 
-// ============ DELAY PREDICTION ============
+// ============ DELAY PREDICTION (single combined banner) ============
 async function updateDelayPrediction(w) {
   if (!w || w.temp == null) return;
   const container = document.getElementById('delayContainer');
@@ -1066,30 +1265,124 @@ async function updateDelayPrediction(w) {
       return;
     }
     const d = await r.json();
-    container.innerHTML = renderDelayBanner('Bus', d.bus) + renderDelayBanner('Luas', d.luas);
+    // Single combined prediction - use higher risk level
+    const busLevel = (d.bus && d.bus.level) || 0;
+    const luasLevel = (d.luas && d.luas.level) || 0;
+    const primary = busLevel >= luasLevel ? d.bus : d.luas;
+    // Deduplicate reasoning by factor name
+    const allReasons = [].concat(d.bus ? d.bus.reasoning || [] : [], d.luas ? d.luas.reasoning || [] : []);
+    const seen = {};
+    const uniqueReasons = allReasons.filter(r => {
+      if (seen[r.factor]) return false;
+      seen[r.factor] = true;
+      return true;
+    });
+    const combined = {
+      level: Math.max(busLevel, luasLevel),
+      label: primary.label,
+      reasoning: uniqueReasons,
+    };
+    container.innerHTML = renderDelayBanner(combined);
   } catch (e) {
     container.innerHTML = '';
   }
 }
 
-function renderDelayBanner(mode, risk) {
+function renderDelayBanner(risk) {
   const level = risk.level;
-  const arrows = '↓'.repeat(Math.max(level, 1));
-  const iconChar = level === 0 ? '✓' : '▼';
   const reasons = (risk.reasoning || [])
     .map(r => `${r.factor} ${r.current}`)
-    .join(' · ') || 'Clear conditions';
+    .join(' \u00B7 ') || 'Clear conditions';
+  // Crowdedness estimate based on time of day + risk level
+  const hour = new Date().getHours();
+  const isRush = (hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 19);
+  const crowdLabel = isRush ? (level >= 2 ? 'Very Busy' : 'Busy') : (level >= 3 ? 'Busy' : 'Normal');
+  const iconHtml = level === 0 ? '&#10003;' : '&#9888;';
   return `
     <div class="delay-banner level-${level}">
-      <div class="delay-icon">${level === 0 ? '✓' : arrows}</div>
+      <div class="delay-icon">${iconHtml}</div>
       <div class="delay-content">
-        <div class="delay-title">${mode}: ${escapeHtml(risk.label)}</div>
-        <div class="delay-sub">${escapeHtml(reasons)}</div>
+        <div class="delay-title">${escapeHtml(risk.label)}</div>
+        <div class="delay-sub">${escapeHtml(reasons)} &middot; Crowdedness: <strong>${crowdLabel}</strong></div>
         <div class="delay-bars">
           ${[0,1,2,3].map(i => `<div class="delay-bar ${i < level ? 'filled' : ''}"></div>`).join('')}
         </div>
       </div>
     </div>`;
+}
+
+// ============ BUS STOPS (dropdown + live arrival board) ============
+function displayBusStops(code) {
+  const container = document.getElementById('busList');
+  const stops = (liveCache && liveCache.bus_stops && liveCache.bus_stops[code]) ? liveCache.bus_stops[code] : [];
+  if (stops.length === 0) {
+    container.innerHTML = '<div class="empty-state">No bus data for this area</div>';
+    document.getElementById('t-bus').textContent = '0';
+    return;
+  }
+  const allRoutes = new Set();
+  stops.forEach(s => (s.routes || []).forEach(r => allRoutes.add(typeof r === 'object' ? r.route : r)));
+  document.getElementById('t-bus').textContent = allRoutes.size;
+
+  container.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <select id="busStopSelect" onchange="loadBusArrivals()" style="
+        width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px;
+        font-size:13px; background:#f9fafb; color:#1e293b; cursor:pointer;">
+        ${stops.map((s, i) => `<option value="${i}">${escapeHtml(s.stop)}${s.stop_id ? ' (Stop ' + escapeHtml(s.stop_id) + ')' : ''}</option>`).join('')}
+      </select>
+    </div>
+    <div id="busArrivals"><div class="empty-state">Select a stop to see arrivals...</div></div>`;
+  loadBusArrivals();
+}
+
+async function loadBusArrivals() {
+  const sel = document.getElementById('busStopSelect');
+  if (!sel) return;
+  const idx = sel.value;
+  const panel = document.getElementById('busArrivals');
+  panel.innerHTML = '<div class="empty-state" style="color:#16a34a;">Loading arrivals...</div>';
+  try {
+    const r = await fetch('/api/bus/arrivals?area=' + encodeURIComponent(selectedArea) + '&stop_idx=' + idx);
+    const d = await r.json();
+    if (d.error) { panel.innerHTML = '<div class="empty-state">' + escapeHtml(d.error) + '</div>'; return; }
+    renderBusArrivals(d, panel);
+  } catch (e) {
+    panel.innerHTML = '<div class="empty-state">Failed to load arrivals</div>';
+  }
+}
+
+function renderBusArrivals(data, panel) {
+  const arr = data.arrivals || [];
+  if (arr.length === 0) { panel.innerHTML = '<div class="empty-state">No buses expected</div>'; return; }
+
+  const crowdColors = { 'Empty':'#16a34a', 'Quiet':'#16a34a', 'Moderate':'#d97706', 'Busy':'#ea580c', 'Very Busy':'#dc2626' };
+  const crowdIcons  = { 'Empty':'\u25CB', 'Quiet':'\u25CB', 'Moderate':'\u25D1', 'Busy':'\u25CF', 'Very Busy':'\u25CF' };
+
+  panel.innerHTML = arr.map(a => {
+    const delayTag = a.delay_min > 0
+      ? '<span style="color:#dc2626; font-size:11px; font-weight:600;">+' + a.delay_min + ' min late</span>'
+      : '<span style="color:#16a34a; font-size:11px; font-weight:600;">On time</span>';
+    const cc = crowdColors[a.crowd_label] || '#6b7280';
+    const ci = crowdIcons[a.crowd_label] || '';
+    return `
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #e5e7eb;">
+        <span style="background:#16a34a; color:white; padding:3px 10px; border-radius:4px;
+          font-size:13px; font-weight:700; font-family:'Menlo','Consolas',monospace; min-width:44px; text-align:center;">${escapeHtml(a.route)}</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            \u2192 ${escapeHtml(a.towards)}</div>
+          <div style="display:flex; gap:8px; align-items:center; margin-top:2px;">
+            ${delayTag}
+            <span style="color:${cc}; font-size:11px;">${ci} ${escapeHtml(a.crowd_label)}</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <div style="font-size:20px; font-weight:700; color:#166534; line-height:1;">${a.eta_min}</div>
+          <div style="font-size:10px; color:#6b7280;">min</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function escapeHtml(s) {
@@ -1098,6 +1391,67 @@ function escapeHtml(s) {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ============ WEATHER MAP (non-clickable, shows weather icons + temps) ============
+function weatherIcon(code) {
+  if (code === 0 || code === 1) return '\u2600';
+  if (code === 2) return '\u26C5';
+  if (code === 3) return '\u2601';
+  if (code >= 45 && code <= 48) return '\u2601';
+  if (code >= 51 && code <= 67) return '\uD83C\uDF27';
+  if (code >= 71 && code <= 77) return '\u2744';
+  if (code >= 80 && code <= 82) return '\uD83C\uDF26';
+  if (code >= 95) return '\u26C8';
+  return '\u2601';
+}
+
+function tempToColor(temp) {
+  if (temp == null) return '#dcfce7';
+  if (temp <= 0) return '#bfdbfe';
+  if (temp <= 5) return '#dbeafe';
+  if (temp <= 10) return '#d1fae5';
+  if (temp <= 15) return '#bbf7d0';
+  if (temp <= 20) return '#fef9c3';
+  return '#fed7aa';
+}
+
+function updateMapWeather() {
+  if (!liveCache || !liveCache.areas) return;
+  document.querySelectorAll('#mapAreas rect[data-area]').forEach(rect => {
+    const area = rect.getAttribute('data-area');
+    const data = liveCache.areas[area];
+    if (!data || !data.weather) return;
+    const w = data.weather;
+    const temp = w.temp;
+    const wcode = w.weather_code || 0;
+
+    // Colour rect by temperature
+    rect.setAttribute('fill', tempToColor(temp));
+    rect.setAttribute('stroke', area === selectedArea ? '#166534' : '#16a34a');
+    rect.setAttribute('stroke-width', area === selectedArea ? '2.5' : '1.5');
+
+    // Find the district label text (immediately after rect)
+    const textEl = rect.nextElementSibling;
+    if (!textEl || textEl.tagName !== 'text') return;
+
+    // Find or create weather info text element
+    let weatherText = textEl.nextElementSibling;
+    if (!weatherText || weatherText.tagName !== 'text' || !weatherText.hasAttribute('data-weather')) {
+      weatherText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      weatherText.setAttribute('data-weather', area);
+      weatherText.setAttribute('text-anchor', 'middle');
+      weatherText.setAttribute('font-size', '11');
+      textEl.parentNode.insertBefore(weatherText, textEl.nextSibling);
+    }
+    const x = textEl.getAttribute('x');
+    const baseY = parseInt(textEl.getAttribute('y'));
+    weatherText.setAttribute('x', x);
+    weatherText.setAttribute('y', String(baseY + 14));
+    weatherText.setAttribute('fill', '#374151');
+    weatherText.textContent = weatherIcon(wcode) + ' ' + (temp != null ? Math.round(temp) + '\u00B0' : '--');
+  });
+}
+
+// ============ CHARTS & HISTORICAL ============
 let chartTimeline = null, chartSeasonal = null, chartCorrelation = null;
 
 async function loadHistorical() {
@@ -1120,10 +1474,21 @@ async function loadHistorical() {
     drawTimeline(dash.bus_timeline, dash.luas_timeline);
     drawSeasonal(dash.seasonal || []);
 
+    let statsData = null;
     if (statsResp.ok) {
-      const stats = await statsResp.json();
-      renderCorrelations(stats);
+      statsData = await statsResp.json();
+      renderCorrelations(statsData);
       document.getElementById('correlationCard').style.display = 'block';
+    }
+
+    // Crowdedness impact charts + correlation chart
+    if (dash.impact && dash.impact.length > 0) {
+      drawCrowdSeverity(dash.impact);
+      drawCrowdSeasonal(dash.seasonal || []);
+      if (statsData && statsData.crowdedness) {
+        drawCrowdCorrelationChart(statsData);
+      }
+      document.getElementById('crowdCard').style.display = 'block';
     }
   } catch (e) {
     console.error('Historical load failed:', e);
@@ -1140,19 +1505,19 @@ function drawTimeline(bus, luas) {
     data: {
       labels,
       datasets: [
-        { label: 'Bus', data: (bus||[]).map(r => r.passengers), borderColor: '#60a5fa',
-          backgroundColor: 'rgba(96,165,250,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 },
-        { label: 'Luas', data: (luas||[]).map(r => r.passengers), borderColor: '#f472b6',
-          backgroundColor: 'rgba(244,114,182,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 }
+        { label: 'Bus', data: (bus||[]).map(r => r.passengers), borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 },
+        { label: 'Luas', data: (luas||[]).map(r => r.passengers), borderColor: '#166534',
+          backgroundColor: 'rgba(22,101,52,0.1)', borderWidth: 2, pointRadius: 0, tension: 0.2 }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { title: { display: true, text: 'Monthly Passenger Timeline', color: '#e2e8f0' },
-                 legend: { labels: { color: '#cbd5e1' } } },
+      plugins: { title: { display: true, text: 'Monthly Passenger Timeline', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
       scales: {
-        x: { ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        x: { ticks: { color: '#6b7280', maxTicksLimit: 10 }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } }
       }
     }
   });
@@ -1169,20 +1534,172 @@ function drawSeasonal(seasonal) {
     data: {
       labels: sorted.map(s => s.season),
       datasets: [
-        { label: 'Avg Bus', data: sorted.map(s => s.avg_bus), backgroundColor: '#60a5fa' },
-        { label: 'Avg Luas', data: sorted.map(s => s.avg_luas), backgroundColor: '#f472b6' }
+        { label: 'Avg Bus', data: sorted.map(s => s.avg_bus), backgroundColor: '#16a34a' },
+        { label: 'Avg Luas', data: sorted.map(s => s.avg_luas), backgroundColor: '#166534' }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { title: { display: true, text: 'Seasonal Average Passengers', color: '#e2e8f0' },
-                 legend: { labels: { color: '#cbd5e1' } } },
+      plugins: { title: { display: true, text: 'Seasonal Average Passengers', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
       scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } }
       }
     }
   });
+}
+
+let chartCrowdSev = null, chartCrowdSeas = null, chartCrowdCorr = null;
+
+function drawCrowdSeverity(impact) {
+  const ctx = document.getElementById('chartCrowdSeverity');
+  if (!ctx) return;
+  if (chartCrowdSev) chartCrowdSev.destroy();
+  // DB uses 'pleasant','moderate','harsh' — map to display labels
+  const order = ['pleasant','moderate','harsh'];
+  const displayLabels = { pleasant: 'Pleasant', moderate: 'Moderate', harsh: 'Harsh' };
+  const sorted = order.map(g => impact.find(x => x.severity_group === g)).filter(Boolean);
+  if (!sorted.length) return;
+  // Convert to millions for readability
+  const toM = v => v / 1e6;
+  chartCrowdSev = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => (displayLabels[s.severity_group] || s.severity_group) + ' Weather'),
+      datasets: [
+        { label: 'Bus passengers', data: sorted.map(s => toM(s.avg_bus)), backgroundColor: '#16a34a', borderRadius: 4 },
+        { label: 'Luas passengers', data: sorted.map(s => toM(s.avg_luas)), backgroundColor: '#166534', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: 'Avg Monthly Ridership by Weather Severity', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } },
+                 tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${item.parsed.y.toFixed(1)}M` } } },
+      scales: {
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } },
+        y: { ticks: { color: '#6b7280', callback: v => v.toFixed(0) + 'M' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Avg monthly passengers (millions)', color: '#6b7280', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function drawCrowdSeasonal(seasonal) {
+  const ctx = document.getElementById('chartCrowdSeasonal');
+  if (!ctx) return;
+  if (chartCrowdSeas) chartCrowdSeas.destroy();
+  const order = ['Winter','Spring','Summer','Autumn'];
+  const sorted = order.map(s => seasonal.find(x => x.season === s)).filter(Boolean);
+  if (!sorted.length) return;
+  // Total passengers = bus + luas in millions, shows overall crowdedness pressure
+  const totals = sorted.map(s => ((s.avg_bus || 0) + (s.avg_luas || 0)) / 1e6);
+  const severity = sorted.map(s => s.avg_severity || 0);
+  chartCrowdSeas = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => s.season),
+      datasets: [
+        { label: 'Total passengers (M)', data: totals, backgroundColor: '#16a34a', borderRadius: 4, yAxisID: 'y' },
+        { label: 'Avg severity', data: severity, type: 'line', borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.1)', pointRadius: 5, pointBackgroundColor: '#dc2626',
+          borderWidth: 2, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: 'Seasonal Crowdedness vs Weather', color: '#1e293b' },
+                 legend: { labels: { color: '#374151' } } },
+      scales: {
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } },
+        y: { position: 'left', ticks: { color: '#6b7280', callback: v => v.toFixed(0) + 'M' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Total passengers (millions)', color: '#6b7280', font: { size: 11 } } },
+        y1: { position: 'right', ticks: { color: '#dc2626' }, grid: { display: false },
+              title: { display: true, text: 'Weather severity', color: '#dc2626', font: { size: 11 } },
+              min: 0, max: 10 }
+      }
+    }
+  });
+}
+
+function drawCrowdCorrelationChart(stats) {
+  const ctx = document.getElementById('chartCrowdCorrelation');
+  if (!ctx) return;
+  if (chartCrowdCorr) chartCrowdCorr.destroy();
+
+  const crowd = stats.crowdedness || {};
+  const bus = crowd.bus || [];
+  const luas = crowd.luas || [];
+  const vars = bus.map(c => c.variable);
+  const busVals = bus.map(c => c.pearson_r);
+  const luasVals = vars.map(v => {
+    const m = luas.find(c => c.variable === v);
+    return m ? m.pearson_r : 0;
+  });
+
+  chartCrowdCorr = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: vars,
+      datasets: [
+        { label: 'Bus crowdedness', data: busVals,
+          backgroundColor: busVals.map(v => v > 0 ? 'rgba(22,163,74,0.7)' : 'rgba(34,197,94,0.4)'),
+          borderColor: busVals.map(v => v > 0 ? '#16a34a' : '#22c55e'),
+          borderWidth: 2, borderRadius: 4 },
+        { label: 'Luas crowdedness', data: luasVals,
+          backgroundColor: luasVals.map(v => v > 0 ? 'rgba(22,101,52,0.7)' : 'rgba(22,101,52,0.3)'),
+          borderColor: luasVals.map(v => v > 0 ? '#166534' : '#14532d'),
+          borderWidth: 2, borderRadius: 4 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true,
+                 text: 'How Each Weather Factor Affects Crowdedness',
+                 color: '#1e293b', font: { size: 14 } },
+        legend: { labels: { color: '#374151', usePointStyle: true, pointStyle: 'rectRounded' } },
+        tooltip: { callbacks: {
+          afterLabel: (item) => {
+            const v = item.parsed.x;
+            const strength = Math.abs(v) < 0.2 ? 'Weak effect' :
+                             Math.abs(v) < 0.4 ? 'Moderate effect' :
+                             Math.abs(v) < 0.6 ? 'Strong effect' : 'Very strong effect';
+            const dir = v > 0 ? '\u2192 More crowded when higher' :
+                                '\u2192 Less crowded when higher';
+            return `${strength}\n${dir}`;
+          }
+        }}
+      },
+      scales: {
+        x: { min: -1, max: 1,
+             ticks: { color: '#6b7280', callback: v => v.toFixed(1) },
+             grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Pearson r (correlation)', color: '#6b7280', font: { size: 11 } } },
+        y: { ticks: { color: '#374151', font: { size: 12 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Populate the crowdedness correlation table
+  const body = document.getElementById('crowdCorrBody');
+  if (body) {
+    const rows = [];
+    (bus).forEach(c => rows.push({ mode: 'Bus ridership', ...c }));
+    (luas).forEach(c => rows.push({ mode: 'Luas ridership', ...c }));
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.mode}</td>
+        <td>${escapeHtml(r.variable)}</td>
+        <td>${r.pearson_r.toFixed(3)}</td>
+        <td>${r.pearson_p.toFixed(4)}</td>
+        <td>${r.spearman_r.toFixed(3)}</td>
+        <td>${r.significant ? '\u2713' : '\u2014'}</td>
+      </tr>
+    `).join('');
+  }
 }
 
 function renderCorrelations(stats) {
@@ -1197,7 +1714,7 @@ function renderCorrelations(stats) {
       <td>${r.pearson_r.toFixed(3)}</td>
       <td>${r.pearson_p.toFixed(4)}</td>
       <td>${r.spearman_r.toFixed(3)}</td>
-      <td>${r.significant ? '✓' : '—'}</td>
+      <td>${r.significant ? '\u2713' : '\u2014'}</td>
     </tr>
   `).join('');
   drawCorrelationChart(stats);
@@ -1215,7 +1732,7 @@ function renderDelayExamples(examples) {
       <table>
         <thead><tr>
           <th>Mode</th><th>Period</th><th>Season</th>
-          <th>Rain (mm)</th><th>Temp (°C)</th><th>Wind (km/h)</th><th>Delay proxy</th>
+          <th>Rain (mm)</th><th>Temp (\u00B0C)</th><th>Wind (km/h)</th><th>Delay proxy</th>
         </tr></thead>
         <tbody>
           ${examples.map(e => `
@@ -1240,7 +1757,6 @@ function drawCorrelationChart(stats) {
 
   const bus = stats.bus || [];
   const luas = stats.luas || [];
-  // Align on same variable order (use bus as reference)
   const vars = bus.map(c => c.variable);
   const busVals = bus.map(c => c.pearson_r);
   const luasVals = vars.map(v => {
@@ -1253,42 +1769,47 @@ function drawCorrelationChart(stats) {
     data: {
       labels: vars,
       datasets: [
-        { label: 'Bus delay', data: busVals, backgroundColor: '#60a5fa',
-          borderColor: '#3b82f6', borderWidth: 1 },
-        { label: 'Luas delay', data: luasVals, backgroundColor: '#f472b6',
-          borderColor: '#ec4899', borderWidth: 1 }
+        { label: 'Bus delay impact', data: busVals,
+          backgroundColor: busVals.map(v => v > 0 ? 'rgba(22,163,74,0.7)' : 'rgba(34,197,94,0.4)'),
+          borderColor: busVals.map(v => v > 0 ? '#16a34a' : '#22c55e'),
+          borderWidth: 2, borderRadius: 4 },
+        { label: 'Luas delay impact', data: luasVals,
+          backgroundColor: luasVals.map(v => v > 0 ? 'rgba(22,101,52,0.7)' : 'rgba(22,101,52,0.3)'),
+          borderColor: luasVals.map(v => v > 0 ? '#166534' : '#14532d'),
+          borderWidth: 2, borderRadius: 4 }
       ]
     },
     options: {
+      indexAxis: 'y',
       responsive: true, maintainAspectRatio: false,
       plugins: {
         title: { display: true,
-                 text: 'Weather factor → % ridership shortfall (delay proxy)',
-                 color: '#e2e8f0' },
-        legend: { labels: { color: '#cbd5e1' } },
+                 text: 'How Each Weather Factor Affects Transport Delays',
+                 color: '#1e293b', font: { size: 14 } },
+        legend: { labels: { color: '#374151', usePointStyle: true, pointStyle: 'rectRounded' } },
         tooltip: { callbacks: {
           afterLabel: (item) => {
-            const v = item.parsed.y;
-            const strength = Math.abs(v) < 0.2 ? 'weak' :
-                             Math.abs(v) < 0.4 ? 'moderate' :
-                             Math.abs(v) < 0.6 ? 'strong' : 'very strong';
-            const dir = v > 0 ? 'positive — higher value increases delay' :
-                        v < 0 ? 'negative — higher value reduces delay' :
-                        'no effect';
+            const v = item.parsed.x;
+            const strength = Math.abs(v) < 0.2 ? 'Weak effect' :
+                             Math.abs(v) < 0.4 ? 'Moderate effect' :
+                             Math.abs(v) < 0.6 ? 'Strong effect' : 'Very strong effect';
+            const dir = v > 0 ? '\u2192 More delay when higher' :
+                        v < 0 ? '\u2192 Less delay when higher' : '\u2192 No effect';
             return `${strength} ${dir}`;
           }
         } }
       },
       scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' },
-             title: { display: true, text: 'Pearson r (delay vs weather)', color: '#94a3b8' },
+        y: { ticks: { color: '#374151', font: { weight: '600' } }, grid: { display: false } },
+        x: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' },
+             title: { display: true, text: 'Correlation Strength (Pearson r)', color: '#6b7280' },
              min: -1, max: 1 }
       }
     }
   });
 }
 
+// ============ PIPELINE ============
 let pollInterval = null;
 
 async function runPipeline() {
@@ -1359,7 +1880,7 @@ async function pollStatus() {
           const summary = Object.entries(d)
             .slice(0, 2)
             .map(([, v]) => Array.isArray(v) ? `${v.length} features` : v)
-            .join(' · ');
+            .join(' \u00B7 ');
           document.getElementById(`step-${idx}-detail`).textContent = summary || 'Done';
         }
       });
@@ -1375,13 +1896,13 @@ async function pollStatus() {
       });
     }
 
-    // Refresh historical data after pipeline completes
     if (s.status === 'complete') {
       setTimeout(() => loadHistorical(), 500);
     }
   }
 }
 
+// ============ FEATURES ============
 async function loadFeatures() {
   const r = await fetch('/api/features/sample');
   if (!r.ok) {
@@ -1417,13 +1938,57 @@ function renderFeatureTable(wrapId, data, sectionId) {
 }
 
 function formatCell(v) {
-  if (v == null) return '<span style="color:#64748b">—</span>';
+  if (v == null) return '<span style="color:#64748b">\u2014</span>';
   if (typeof v === 'number') {
     if (Number.isInteger(v)) return v.toLocaleString();
     return v.toFixed(2);
   }
-  if (typeof v === 'boolean') return v ? '✓' : '—';
+  if (typeof v === 'boolean') return v ? '\u2713' : '\u2014';
   return escapeHtml(String(v));
+}
+
+// ============ DATABASE TAB ============
+async function loadDbLive() {
+  try {
+    // Use the cached live data if available, otherwise fetch fresh
+    let d = liveCache;
+    if (!d) {
+      const r = await fetch('/api/live');
+      d = await r.json();
+    }
+    // Weather live snapshot for selected area
+    const wEl = document.getElementById('dbWeatherLive');
+    const areaData = (d.areas && d.areas[selectedArea]) ? d.areas[selectedArea] : null;
+    const w = areaData ? (areaData.weather || {}) : {};
+    if (w.temp != null) {
+      wEl.innerHTML = `<table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Temperature</td><td>${w.temp}\u00B0C</td></tr>
+          <tr><td>Humidity</td><td>${w.humidity}%</td></tr>
+          <tr><td>Rain</td><td>${(w.rain||0).toFixed(1)} mm</td></tr>
+          <tr><td>Wind Speed</td><td>${(w.wind_speed||0).toFixed(1)} km/h</td></tr>
+          <tr><td>Pressure</td><td>${Math.round(w.pressure||0)} hPa</td></tr>
+          <tr><td>Condition</td><td>${escapeHtml(w.description)}</td></tr>
+          <tr><td>Severity</td><td>${(w.severity||0).toFixed(1)}/10</td></tr>
+          <tr><td>Area</td><td>${escapeHtml(areaData ? areaData.name : selectedArea)}</td></tr>
+        </tbody></table>`;
+    }
+    // Rail live snapshot
+    const rEl = document.getElementById('dbRailLive');
+    const rail = d.rail || [];
+    if (rail.length > 0) {
+      rEl.innerHTML = `<table>
+        <thead><tr><th>Code</th><th>Direction</th><th>Status</th></tr></thead>
+        <tbody>${rail.slice(0,15).map(t => `<tr>
+          <td><strong>${escapeHtml(t.code)}</strong></td>
+          <td>${escapeHtml(t.direction)}</td>
+          <td>${t.status === 'R' ? 'Running' : t.status === 'N' ? 'Not started' : t.status || ''}</td>
+        </tr>`).join('')}</tbody></table>`;
+    } else {
+      rEl.innerHTML = '<div class="empty-state">No active trains</div>';
+    }
+  } catch(e) { console.error('DB live load failed:', e); }
 }
 
 async function loadTables() {
@@ -1441,7 +2006,7 @@ async function loadTables() {
   list.innerHTML = tables.map(t => `
     <div class="table-item" onclick="selectTable('${escapeHtml(t.name)}')">
       <div class="tname">${escapeHtml(t.name)}</div>
-      <div class="trows">${t.rows.toLocaleString()} rows · ${t.columns.length} cols</div>
+      <div class="trows">${t.rows.toLocaleString()} rows \u00B7 ${t.columns.length} cols</div>
     </div>
   `).join('');
 }
@@ -1482,6 +2047,7 @@ async function runQuery() {
   }
 }
 
+// ============ TESTS ============
 let lastTestResults = null;
 
 async function loadTestList() {
@@ -1499,12 +2065,10 @@ async function loadTestList() {
 
 function renderTestList(classes, results) {
   const list = document.getElementById('testList');
-  // Build lookup of test statuses (if we have results)
   const statusMap = {};
   if (results) {
     (results.failures || []).forEach(f => statusMap[f.test] = 'fail');
     (results.error_list || []).forEach(f => statusMap[f.test] = 'fail');
-    // Everything else is pass if we have results
   }
   list.innerHTML = classes.map(c => `
     <div class="test-class-card">
@@ -1519,7 +2083,7 @@ function renderTestList(classes, results) {
           if (results) {
             status = statusMap[key] === 'fail' ? 'fail' : 'pass';
           }
-          const icon = status === 'pass' ? '✓' : status === 'fail' ? '✗' : '•';
+          const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2717' : '\u2022';
           return `
             <div class="test-row">
               <div class="icon ${status}">${icon}</div>
@@ -1548,7 +2112,6 @@ async function runTests() {
     const pass = d.passed || 0;
     const total = d.total || 0;
     badge.innerHTML = `<span class="test-badge ${d.success ? 'pass' : 'fail'}">${pass}/${total} PASSED</span>`;
-    // Re-render test list with statuses
     loadTestList();
   } catch (e) {
     badge.innerHTML = `<span class="test-badge fail">Error</span>`;
@@ -1557,17 +2120,31 @@ async function runTests() {
   btn.textContent = 'Run All Tests';
 }
 
+// ============ INIT ============
+updateMapWeather();
 loadAreas();
 refreshLive();
 liveInterval = setInterval(refreshLive, 60000);
-// Update the "last updated" time every second for the live clock feel
+
+// Countdown timer for next auto-refresh
+let countdownSec = 60;
 setInterval(() => {
+  countdownSec--;
+  if (countdownSec <= 0) countdownSec = 60;
+  const el = document.getElementById('countdown');
+  if (el) el.textContent = countdownSec + 's';
   const nowEl = document.getElementById('w-now');
-  if (nowEl && nowEl.textContent !== '—') {
+  if (nowEl && nowEl.textContent !== '\u2014') {
     nowEl.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   }
 }, 1000);
+
+// Reset countdown on manual refresh
+const origRefresh = refreshLive;
+refreshLive = async function() { countdownSec = 60; return origRefresh(); };
+
 loadHistorical();
 </script>
+
 </body>
 </html>
