@@ -541,10 +541,41 @@ def api_prediction():
                 'reasoning': reasoning,
             }
 
+        # ── Area-level crowdedness prediction (weather vs passenger counts) ──
+        severity = compute_weather_severity(temp, rain, wind)
+        cscore = 0
+        for var, cur_val, weight in [
+            ('total_rain', hourly_as_monthly, 1.5),
+            ('avg_wind', wind, 1.0),
+            ('mean_temp', temp, 1.0),
+            ('avg_severity', severity, 1.5),
+        ]:
+            if var in df.columns and df[var].std() > 0:
+                r = df[var].corr(df['bus_passengers'])
+                q90 = max(df[var].quantile(0.9), 1)
+                pct = min(cur_val / q90, 2.0)
+                cscore += r * pct * weight
+
+        hour = datetime.now().hour
+        is_rush = (7 <= hour <= 9) or (16 <= hour <= 19)
+        is_late = hour < 6 or hour >= 23
+        crowd_base = 3.0 + cscore
+        if is_rush:
+            crowd_base += 1.5
+        if is_late:
+            crowd_base -= 1.0
+        crowd_level = max(1, min(5, round(crowd_base)))
+        crowd_labels = {1: 'Empty', 2: 'Quiet', 3: 'Moderate', 4: 'Busy', 5: 'Very Busy'}
+
         return jsonify({
             'inputs': {'temp': temp, 'rain': rain, 'wind': wind},
             'bus': risks['bus'],
             'luas': risks['luas'],
+            'crowdedness': {
+                'level': crowd_level,
+                'label': crowd_labels[crowd_level],
+                'is_rush_hour': is_rush,
+            },
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
