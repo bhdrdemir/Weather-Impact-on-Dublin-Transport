@@ -18,7 +18,7 @@ from scipy.stats import pearsonr, spearmanr, kruskal
 
 from pipeline import (
     run_full_pipeline, DB_PATH,
-    fetch_openweather_current, fetch_luas_realtime,
+    fetch_luas_realtime,
     fetch_irish_rail_realtime, fetch_luas_all_stops,
     LUAS_STOPS, LUAS_KEY_STOPS, SEASON_MAP,
     compute_weather_severity
@@ -72,17 +72,12 @@ def api_run_pipeline():
     if pipeline_state['status'] == 'running':
         return jsonify({'error': 'Pipeline already running'}), 409
 
-    api_key = request.json.get('api_key', '') if request.is_json else ''
-
     def _run():
         pipeline_state['status'] = 'running'
         pipeline_state['result'] = None
         pipeline_state['log'] = []
         try:
-            result = run_full_pipeline(
-                owm_api_key=api_key or None,
-                progress_callback=pipeline_progress
-            )
+            result = run_full_pipeline(progress_callback=pipeline_progress)
             pipeline_state['result'] = result
             pipeline_state['status'] = result.get('status', 'complete')
         except Exception as e:
@@ -280,15 +275,6 @@ def api_run_tests():
         return jsonify(run_tests())
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/weather/current')
-def api_current_weather():
-    api_key = request.args.get('api_key', '')
-    if not api_key:
-        return jsonify({'error': 'API key required'}), 400
-    result = fetch_openweather_current(api_key)
-    return jsonify(result) if result else (jsonify({'error': 'Failed'}), 502)
 
 
 @app.route('/api/luas/realtime')
@@ -1064,7 +1050,7 @@ def api_dashboard():
         # Weather severity over time (monthly)
         weather_trend = pd.read_sql_query("""
             SELECT year, month, mean_temp, total_rain, avg_severity, rainy_days, severe_days
-            FROM weather_monthly WHERE year >= 2018 ORDER BY year, month
+            FROM weather_monthly WHERE year >= 2022 ORDER BY year, month
         """, conn)
         # Impact analysis: ridership by weather severity group
         impact = pd.read_sql_query("""

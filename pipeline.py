@@ -5,8 +5,8 @@ Weather Impact on Dublin Public Transport
 B9AI001 Programming for Data Analytics — CA2
 
 All data is fetched LIVE from APIs — no CSV files used:
-  - Open-Meteo API        → Historical hourly weather (2018-2025)
-  - OpenWeatherMap API     → Current Dublin weather (real-time)
+  - Open-Meteo API        → Historical hourly weather (2022-now)
+                            + live multi-location forecast (9 Dublin areas)
   - CSO PxStat REST API    → Dublin Bus + Luas monthly passengers
   - Luas Forecasting API   → Real-time tram arrivals
   - Irish Rail API         → Real-time train positions + delays
@@ -100,39 +100,6 @@ def fetch_open_meteo_historical(start_date, end_date,
     except Exception as e:
         logger.warning(f"Open-Meteo error: {e}")
         return pd.DataFrame()
-
-
-def fetch_openweather_current(api_key, city='Dublin,IE', units='metric'):
-    """
-    Fetch current weather from OpenWeatherMap. Requires free API key.
-    CC BY-SA 4.0 licence.
-    """
-    if not api_key or api_key == 'YOUR_API_KEY_HERE':
-        return None
-    url = 'https://api.openweathermap.org/data/2.5/weather'
-    params = {'q': city, 'appid': api_key, 'units': units}
-    try:
-        resp = requests.get(url, params=params, timeout=10)
-        resp.raise_for_status()
-        d = resp.json()
-        return {
-            'timestamp': datetime.utcfromtimestamp(d['dt']).isoformat(),
-            'temp': d['main']['temp'],
-            'temp_min': d['main']['temp_min'],
-            'temp_max': d['main']['temp_max'],
-            'humidity': d['main']['humidity'],
-            'pressure': d['main']['pressure'],
-            'wind_speed': d['wind']['speed'],
-            'wind_deg': d['wind'].get('deg', 0),
-            'description': d['weather'][0]['description'],
-            'icon': d['weather'][0]['icon'],
-            'rain_1h': d.get('rain', {}).get('1h', 0.0),
-            'clouds': d['clouds']['all'],
-            'source': 'openweathermap_api'
-        }
-    except Exception as e:
-        logger.warning(f"OpenWeatherMap error: {e}")
-        return None
 
 
 def fetch_cso_transport(table_id):
@@ -734,7 +701,7 @@ def load_to_database(conn, hourly_df, daily_df, monthly_df,
 # SECTION 5: PIPELINE ORCHESTRATION
 # ===================================================================
 
-def run_full_pipeline(owm_api_key=None, progress_callback=None):
+def run_full_pipeline(progress_callback=None):
     """
     Full ETL pipeline: Acquire → Extract Features → Transform → Load.
     progress_callback(step_name, status, details) is called at each stage.
@@ -749,7 +716,7 @@ def run_full_pipeline(owm_api_key=None, progress_callback=None):
     try:
         # ============ STEP 1: DATA ACQUISITION ============
         step = {'name': 'Data Acquisition', 'status': 'running', 'details': {}}
-        notify('Data Acquisition', 'running', 'Fetching from 5 APIs...')
+        notify('Data Acquisition', 'running', 'Fetching from 4 APIs...')
 
         # 1a. Open-Meteo historical — 2022 through latest archive-available day
         #     Archive has ~5-day lag; go up to 5 days before today
